@@ -3,23 +3,15 @@ import { Calendar } from './components/Calendar';
 import { Login } from './components/Login';
 import { Footer } from './components/Footer';
 import { logout } from './services/auth';
-
-
-import { updateProfile } from 'firebase/auth';
+import { getAuth, updateProfile } from 'firebase/auth';
 import { useEffect } from 'react';
 
 function App() {
     const { user, loading, isAuthenticated } = useAuth();
 
-    useEffect(() => {
-      if (!user) return;
 
-      if (!user.displayName) {
-          updateProfile(user, {
-              displayName: 'Pablo'
-          });
-      }
-  }, [user]);
+    console.log('Usuario actual:', user);
+    console.log('Display name:', user?.displayName);
 
     if (loading) {
         return <div className="text-white">Cargando...</div>;
@@ -31,7 +23,7 @@ function App() {
                 <Login />
             ) : (
                 <Calendar
-                    user={user.email}
+                    user={user}
                     onLogout={logout}
                 />
             )}

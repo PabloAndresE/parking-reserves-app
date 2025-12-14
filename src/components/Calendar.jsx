@@ -32,7 +32,7 @@ export function Calendar({ user, onLogout }) {
         getStatus,
         getUserReservations,
         loadDay
-    } = useParkingReservations(user);
+    } = useParkingReservations(user.email);
 
     const { toast, showToast } = useToast();
     const myDays = getUserReservations();
@@ -99,7 +99,7 @@ export function Calendar({ user, onLogout }) {
                 {/* Header */}
                 <div className="flex justify-between items-center">
                     <div>
-                        <h2 className="text-2xl font-bold">Hola, {user}</h2>
+                        <h2 className="text-2xl font-bold">Hola, {user.displayName ?? user.email}</h2>
                         <p className="text-neutral-400">Reserva tus días de parqueo</p>
                     </div>
                     <button
