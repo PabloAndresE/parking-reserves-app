@@ -31,7 +31,8 @@ export function Calendar({ user, onLogout }) {
         cancel,
         getStatus,
         getUserReservations,
-        loadDay
+        loadDay,
+        getUserName
     } = useParkingReservations(user.uid);
 
     const { toast, showToast } = useToast();
@@ -211,11 +212,10 @@ export function Calendar({ user, onLogout }) {
                                                     : 'bg-neutral-700 text-neutral-300'
                                             )}
                                         >
-                                            {uid === user.uid
-                                                ? (user.displayName ?? user.email)
-                                                : uid}
+                                            {getUserName(uid)}
                                         </span>
                                     ))}
+
                                     </div>
                                 </button>
                             );
