@@ -14,7 +14,7 @@ export function Login() {
             await login(email, password);
         } catch (err) {
             console.error(err.code, err.message);
-            setError(err.code);
+            setError('Credenciales incorrectas');
         }
     };
 
