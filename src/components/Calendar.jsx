@@ -32,7 +32,7 @@ export function Calendar({ user, onLogout }) {
         getStatus,
         getUserReservations,
         loadDay
-    } = useParkingReservations(user.email);
+    } = useParkingReservations(user.uid);
 
     const { toast, showToast } = useToast();
     const myDays = getUserReservations();
@@ -70,7 +70,7 @@ export function Calendar({ user, onLogout }) {
         const dateStr = format(day, 'yyyy-MM-dd');
         const status = getStatus(dateStr);
 
-        if (status.users.includes(user)) {
+        if (status.users.includes(user.uid)) {
             await cancel(dateStr);
             return;
         }
@@ -146,7 +146,7 @@ export function Calendar({ user, onLogout }) {
                             const isCurrentMonth = isSameMonth(day, currentDate);
                             const isPastDay = day < startOfToday();
                             const isWeekendDay = isWeekend(day);
-                            const isMine = status.users.includes(user);
+                            const isMine = status.users.includes(user.uid);
                             const isFull = status.isFull;
 
                             const isDisabled = !isCurrentMonth || isPastDay || isWeekendDay;
@@ -206,7 +206,7 @@ export function Calendar({ user, onLogout }) {
                                                 key={u}
                                                 className={cn(
                                                     'px-2 py-0.5 rounded-full truncate max-w-full',
-                                                    u === user
+                                                    u === user.uid
                                                         ? 'bg-white/20 text-white font-medium'
                                                         : 'bg-neutral-700 text-neutral-300'
                                                 )}
