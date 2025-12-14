@@ -201,19 +201,21 @@ export function Calendar({ user, onLogout }) {
 
                                     {/* Users */}
                                     <div className="flex flex-col gap-1 items-end text-xs">
-                                        {status.users.map(u => (
-                                            <span
-                                                key={u}
-                                                className={cn(
-                                                    'px-2 py-0.5 rounded-full truncate max-w-full',
-                                                    u === user.uid
-                                                        ? 'bg-white/20 text-white font-medium'
-                                                        : 'bg-neutral-700 text-neutral-300'
-                                                )}
-                                            >
-                                                {u}
-                                            </span>
-                                        ))}
+                                    {status.users.map(uid => (
+                                        <span
+                                            key={uid}
+                                            className={cn(
+                                                'px-2 py-0.5 rounded-full truncate max-w-full',
+                                                uid === user.uid
+                                                    ? 'bg-white/20 text-white font-medium'
+                                                    : 'bg-neutral-700 text-neutral-300'
+                                            )}
+                                        >
+                                            {uid === user.uid
+                                                ? (user.displayName ?? user.email)
+                                                : uid}
+                                        </span>
+                                    ))}
                                     </div>
                                 </button>
                             );
