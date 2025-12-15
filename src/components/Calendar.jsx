@@ -88,58 +88,58 @@ export function Calendar({ user, onLogout }) {
     ===================== */
 
     return (
-        <div className="flex-1 bg-neutral-900 text-white p-4 grid place-items-center overflow-hidden">
+        <div className="flex-1 bg-neutral-900 text-white p-3 sm:p-4 grid place-items-center overflow-hidden">
             <div
                 className="
                     max-w-4xl w-full h-full
                     grid grid-rows-[auto_1fr_auto]
-                    gap-4
+                    gap-3 sm:gap-4
                 "
             >
 
                 {/* Header */}
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div>
-                        <h2 className="text-2xl font-bold">Hola, {user.displayName ?? user.email}</h2>
-                        <p className="text-neutral-400">Reserva tus días de parqueo</p>
+                        <h2 className="text-xl sm:text-2xl font-bold">Hola, {user.displayName ?? user.email}</h2>
+                        <p className="text-neutral-400 text-sm">Reserva tus días de parqueo</p>
                     </div>
                     <button
                         onClick={onLogout}
-                        className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-sm"
+                        className="px-3 sm:px-4 py-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-xs sm:text-sm whitespace-nowrap"
                     >
                         Cambiar Usuario
                     </button>
                 </div>
 
                 {/* Calendar */}
-                <div className="bg-neutral-800/50 rounded-2xl p-4 border border-neutral-700 grid grid-rows-[auto_auto_1fr] overflow-hidden">
+                <div className="bg-neutral-800/50 rounded-2xl p-3 sm:p-4 border border-neutral-700 grid grid-rows-[auto_auto_1fr] overflow-hidden">
 
                     {/* Month header */}
-                    <div className="flex items-center justify-between mb-2">
-                        <h2 className="text-3xl font-bold capitalize">
+                    <div className="flex items-center justify-between mb-2 gap-2">
+                        <h2 className="text-xl sm:text-3xl font-bold capitalize">
                             {format(currentDate, 'MMMM yyyy', { locale: es })}
                         </h2>
-                        <div className="flex gap-2">
-                            <button onClick={() => setCurrentDate(subMonths(currentDate, 1))}>
-                                <ChevronLeft />
+                        <div className="flex gap-1 sm:gap-2">
+                            <button onClick={() => setCurrentDate(subMonths(currentDate, 1))} className="p-1 hover:bg-neutral-700 rounded">
+                                <ChevronLeft size={20} className="sm:w-6 sm:h-6" />
                             </button>
-                            <button onClick={() => setCurrentDate(addMonths(currentDate, 1))}>
-                                <ChevronRight />
+                            <button onClick={() => setCurrentDate(addMonths(currentDate, 1))} className="p-1 hover:bg-neutral-700 rounded">
+                                <ChevronRight size={20} className="sm:w-6 sm:h-6" />
                             </button>
                         </div>
                     </div>
 
                     {/* Weekdays */}
-                    <div className="grid grid-cols-7 gap-2">
+                    <div className="grid grid-cols-7 gap-1 sm:gap-2">
                         {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(d => (
-                            <div key={d} className="text-center text-neutral-400 text-sm">
+                            <div key={d} className="text-center text-neutral-400 text-xs sm:text-sm">
                                 {d}
                             </div>
                         ))}
                     </div>
 
                     {/* Days */}
-                    <div className="grid grid-cols-7 gap-2 auto-rows-fr overflow-hidden">
+                    <div className="grid grid-cols-7 gap-1 sm:gap-2 auto-rows-fr overflow-hidden">
                         {calendarDays.map(day => {
                             const dateStr = format(day, 'yyyy-MM-dd');
                             const status = getStatus(dateStr);
@@ -185,7 +185,7 @@ export function Calendar({ user, onLogout }) {
                                     disabled={isDisabled}
                                     onClick={() => toggleDay(day)}
                                     className={cn(
-                                        'relative rounded-xl border-2 p-2 flex flex-col justify-between',
+                                        'relative rounded-lg sm:rounded-xl border-2 p-1 sm:p-2 flex flex-col justify-between',
                                         'transition-all duration-200 ease-out',
                                         'aspect-[4/3]',
                                         !isDisabled && 'hover:scale-[1.02] active:scale-[0.98]',
@@ -196,17 +196,17 @@ export function Calendar({ user, onLogout }) {
                                         isDisabled && 'opacity-50 cursor-not-allowed'
                                     )}
                                 >
-                                    <span className="font-bold text-lg">
+                                    <span className="font-bold text-sm sm:text-lg">
                                         {format(day, 'd')}
                                     </span>
 
                                     {/* Users */}
-                                    <div className="flex flex-col gap-1 items-end text-xs">
+                                    <div className="flex flex-col gap-0.5 sm:gap-1 items-end text-[10px] sm:text-xs">
                                     {status.users.map(uid => (
                                         <span
                                             key={uid}
                                             className={cn(
-                                                'px-2 py-0.5 rounded-full truncate max-w-full',
+                                                'px-1 sm:px-2 py-0.5 rounded-full truncate max-w-full',
                                                 uid === user.uid
                                                     ? 'bg-white/20 text-white font-medium'
                                                     : 'bg-neutral-700 text-neutral-300'
@@ -229,13 +229,13 @@ export function Calendar({ user, onLogout }) {
                         disabled={myDays.length === 0}
                         onClick={() => setShowConfirmModal(true)}
                         className={cn(
-                            'px-8 py-3 rounded-xl font-bold text-lg transition-all',
+                            'px-4 sm:px-8 py-2 sm:py-3 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg transition-all',
                             myDays.length === 0
                                 ? 'bg-neutral-700 text-neutral-400 cursor-not-allowed'
                                 : 'bg-indigo-600 hover:bg-indigo-500 text-white'
                         )}
                     >
-                        Confirmar Reserva ({myDays.length})
+                        Confirmar ({myDays.length})
                     </button>
                 </div>
             </div>
@@ -248,13 +248,13 @@ export function Calendar({ user, onLogout }) {
                     <>
                         <button
                             onClick={() => setShowConfirmModal(false)}
-                            className="px-4 py-2 bg-neutral-700 rounded-lg"
+                            className="px-3 sm:px-4 py-2 bg-neutral-700 rounded-lg text-sm"
                         >
                             Cancelar
                         </button>
                         <button
                             onClick={() => setShowConfirmModal(false)}
-                            className="px-4 py-2 bg-indigo-600 rounded-lg font-bold"
+                            className="px-3 sm:px-4 py-2 bg-indigo-600 rounded-lg font-bold text-sm"
                         >
                             Confirmar
                         </button>
@@ -265,7 +265,7 @@ export function Calendar({ user, onLogout }) {
                     {myDays.map(d => (
                         <li
                             key={d}
-                            className="bg-neutral-700 rounded-lg px-3 py-2 text-sm"
+                            className="bg-neutral-700 rounded-lg px-3 py-2 text-xs sm:text-sm"
                         >
                             {d}
                         </li>

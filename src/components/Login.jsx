@@ -19,27 +19,27 @@ export function Login() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-neutral-900">
+        <div className="min-h-screen flex items-center justify-center bg-neutral-900 p-4">
             <form
                 onSubmit={handleSubmit}
-                className="bg-neutral-800 p-6 rounded-xl w-80 space-y-4"
+                className="bg-neutral-800 p-6 sm:p-8 rounded-xl w-full max-w-sm space-y-4"
             >
-                <h2 className="text-xl font-bold text-white">Iniciar sesión</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-white">Iniciar sesión</h2>
 
                 <input
                     type="email"
                     placeholder="Email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    className="w-full p-2 rounded bg-neutral-700 text-white"
+                    className="w-full p-3 rounded bg-neutral-700 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
 
                 <input
                     type="password"
-                    placeholder="Password"
+                    placeholder="Contraseña"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="w-full p-2 rounded bg-neutral-700 text-white"
+                    className="w-full p-3 rounded bg-neutral-700 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
 
                 {error && (
@@ -48,7 +48,7 @@ export function Login() {
 
                 <button
                     type="submit"
-                    className="w-full bg-indigo-600 hover:bg-indigo-500 py-2 rounded font-bold text-white"
+                    className="w-full bg-indigo-600 hover:bg-indigo-500 py-3 rounded font-bold text-white transition-colors"
                 >
                     Entrar
                 </button>
