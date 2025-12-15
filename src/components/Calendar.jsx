@@ -150,7 +150,7 @@ export function Calendar({ user, onLogout }) {
                             const isMine = status.users.includes(user.uid);
                             const isFull = status.isFull;
 
-                            const isDisabled = !isCurrentMonth || isPastDay || isWeekendDay || (isFull && !isMine);
+                            const isDisabled = !isCurrentMonth || isPastDay || isWeekendDay;
 
                             let bg = 'bg-neutral-900/50';
                             let text = 'text-neutral-300';
