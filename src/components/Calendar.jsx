@@ -98,11 +98,17 @@ export function Calendar({ user, onLogout }) {
             >
 
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                    <div>
-                        <h2 className="text-xl sm:text-2xl font-bold">Hola, {user.displayName ?? user.email}</h2>
-                        <p className="text-neutral-400 text-sm">Reserva tus días de parqueo</p>
+                <div className="flex justify-between items-center gap-3">
+                    <div className="min-w-0">
+                        <h2 className="text-2xl sm:text-3xl font-extrabold truncate">
+
+                            Hola, {user.displayName ?? user.email}
+                        </h2>
+                        <p className="text-neutral-400 text-xs sm:text-sm">
+                            Reserva tus días de parqueo
+                        </p>
                     </div>
+
                     <button
                         onClick={onLogout}
                         className="px-3 sm:px-4 py-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-xs sm:text-sm whitespace-nowrap"
@@ -110,6 +116,7 @@ export function Calendar({ user, onLogout }) {
                         Cambiar Usuario
                     </button>
                 </div>
+
 
                 {/* Calendar */}
                 <div className="bg-neutral-800/50 rounded-2xl p-3 sm:p-4 border border-neutral-700 grid grid-rows-[auto_auto_1fr] overflow-hidden">
@@ -139,7 +146,7 @@ export function Calendar({ user, onLogout }) {
                     </div>
 
                     {/* Days */}
-                    <div className="grid grid-cols-7 gap-1 sm:gap-2 auto-rows-fr overflow-hidden">
+                    <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
                         {calendarDays.map(day => {
                             const dateStr = format(day, 'yyyy-MM-dd');
                             const status = getStatus(dateStr);
@@ -185,58 +192,61 @@ export function Calendar({ user, onLogout }) {
                                     disabled={isDisabled}
                                     onClick={() => toggleDay(day)}
                                     className={cn(
-                                        'relative rounded-lg sm:rounded-xl border-2 p-1 sm:p-2 flex flex-col justify-between',
-                                        'transition-all duration-200 ease-out',
+                                        'relative rounded-md sm:rounded-lg border p-1 flex flex-col justify-between',
+                                        'transition-all duration-150 ease-out',
                                         'aspect-[4/3]',
                                         !isDisabled && 'hover:scale-[1.02] active:scale-[0.98]',
-                                        isMine && !isDisabled && 'shadow-lg shadow-indigo-500/30',
+                                        isMine && !isDisabled && 'shadow-md shadow-indigo-500/30',
                                         bg,
                                         text,
                                         border,
                                         isDisabled && 'opacity-50 cursor-not-allowed'
                                     )}
                                 >
-                                    <span className="font-bold text-sm sm:text-lg">
+                                    {/* Day number */}
+                                    <span className="font-semibold text-sm sm:text-base leading-none">
+
                                         {format(day, 'd')}
                                     </span>
 
                                     {/* Users */}
-                                    <div className="flex flex-col gap-0.5 sm:gap-1 items-end text-[10px] sm:text-xs">
-                                    {status.users.map(uid => (
-                                        <span
-                                            key={uid}
-                                            className={cn(
-                                                'px-1 sm:px-2 py-0.5 rounded-full truncate max-w-full',
-                                                uid === user.uid
-                                                    ? 'bg-white/20 text-white font-medium'
-                                                    : 'bg-neutral-700 text-neutral-300'
-                                            )}
-                                        >
-                                            {getUserName(uid)}
-                                        </span>
-                                    ))}
-
+                                    <div className="flex flex-col gap-0.5 items-end text-[10px] sm:text-xs leading-tight">
+                                        {status.users.map(uid => (
+                                            <span
+                                                key={uid}
+                                                className={cn(
+                                                    'px-1 py-0.5 rounded-full truncate max-w-full',
+                                                    uid === user.uid
+                                                        ? 'bg-white/20 text-white font-medium'
+                                                        : 'bg-neutral-700 text-neutral-300'
+                                                )}
+                                            >
+                                                {getUserName(uid)}
+                                            </span>
+                                        ))}
                                     </div>
                                 </button>
                             );
                         })}
                     </div>
+
                 </div>
 
                 {/* Confirm button */}
                 <div className="flex justify-end">
-                    <button
-                        disabled={myDays.length === 0}
-                        onClick={() => setShowConfirmModal(true)}
-                        className={cn(
-                            'px-4 sm:px-8 py-2 sm:py-3 rounded-lg sm:rounded-xl font-bold text-sm sm:text-lg transition-all',
-                            myDays.length === 0
-                                ? 'bg-neutral-700 text-neutral-400 cursor-not-allowed'
-                                : 'bg-indigo-600 hover:bg-indigo-500 text-white'
-                        )}
-                    >
-                        Confirmar ({myDays.length})
-                    </button>
+                <button
+                    disabled={myDays.length === 0}
+                    onClick={() => setShowConfirmModal(true)}
+                    className={cn(
+                        'px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-lg font-semibold text-sm sm:text-base transition-all',
+                        myDays.length === 0
+                            ? 'bg-neutral-700 text-neutral-400 cursor-not-allowed'
+                            : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                    )}
+                >
+                    Confirmar ({myDays.length})
+                </button>
+
                 </div>
             </div>
 
