@@ -42,7 +42,9 @@ function App() {
             ) : (
                 <Calendar
                     user={user}
-                    onLogout={logout}
+                    onLogout={async () => {
+                        await logout();
+                    }}
                 />
             )}
             <Footer />

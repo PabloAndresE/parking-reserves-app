@@ -6,12 +6,19 @@ export function useAuth() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        let mounted = true;
+
         const unsubscribe = onAuthChange(firebaseUser => {
+            if (!mounted) return;
+
             setUser(firebaseUser);
             setLoading(false);
         });
 
-        return unsubscribe;
+        return () => {
+            mounted = false;
+            unsubscribe();
+        };
     }, []);
 
     return {
