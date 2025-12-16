@@ -25,6 +25,7 @@ import { Toast } from './Toast';
 export function Calendar({ user, onLogout }) {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [sessionReservations, setSessionReservations] = useState([]); // [NEW] Track session reservations
 
     const {
         reserve,
@@ -73,13 +74,22 @@ export function Calendar({ user, onLogout }) {
 
         if (status.users.includes(user.uid)) {
             await cancel(dateStr);
+            setSessionReservations(prev => prev.filter(d => d !== dateStr)); // [NEW] Remove from session
             return;
         }
+
+        // [NEW] Optimistic update: Add to session immediately
+        setSessionReservations(prev => [...prev, dateStr].sort());
 
         const result = await reserve(dateStr);
 
         if (result?.reason === 'DAY_FULL') {
             showToast('Este día ya está completo');
+            // Revert optimistic update
+            setSessionReservations(prev => prev.filter(d => d !== dateStr));
+        } else if (!result?.ok) {
+            // Revert on other errors
+            setSessionReservations(prev => prev.filter(d => d !== dateStr));
         }
     };
 
@@ -113,7 +123,7 @@ export function Calendar({ user, onLogout }) {
                         onClick={onLogout}
                         className="px-3 sm:px-4 py-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg text-xs sm:text-sm whitespace-nowrap"
                     >
-                        Cambiar Usuario
+                        Cerrar Sesión
                     </button>
                 </div>
 
@@ -174,9 +184,16 @@ export function Calendar({ user, onLogout }) {
                             }
 
                             if (isMine && !isDisabled) {
-                                bg = 'bg-indigo-600 hover:bg-indigo-500';
-                                text = 'text-white';
-                                border = 'border-indigo-400';
+                                if (sessionReservations.includes(dateStr)) {
+                                    bg = 'bg-indigo-600 hover:bg-indigo-500';
+                                    border = 'border-indigo-400';
+                                    text = 'text-white';
+                                } else {
+                                    bg = 'bg-[#B4B4E6] hover:brightness-110';
+                                    border = 'border-[#B4B4E6]';
+                                    text = 'text-neutral-900';
+                                }
+                                // text = 'text-white'; // Removed global override
                             } else if (isFull && !isDisabled) {
                                 bg = 'bg-red-900/20';
                                 text = 'text-neutral-500';
@@ -196,7 +213,7 @@ export function Calendar({ user, onLogout }) {
                                         'transition-all duration-150 ease-out',
                                         'aspect-[4/3]',
                                         !isDisabled && 'hover:scale-[1.02] active:scale-[0.98]',
-                                        isMine && !isDisabled && 'shadow-md shadow-indigo-500/30',
+                                        isMine && !isDisabled && (sessionReservations.includes(dateStr) ? 'shadow-md shadow-indigo-500/30' : 'shadow-md shadow-[#B4B4E6]/30'),
                                         bg,
                                         text,
                                         border,
@@ -234,18 +251,18 @@ export function Calendar({ user, onLogout }) {
 
                 {/* Confirm button */}
                 <div className="flex justify-end">
-                <button
-                    disabled={myDays.length === 0}
-                    onClick={() => setShowConfirmModal(true)}
-                    className={cn(
-                        'px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-lg font-semibold text-sm sm:text-base transition-all',
-                        myDays.length === 0
-                            ? 'bg-neutral-700 text-neutral-400 cursor-not-allowed'
-                            : 'bg-indigo-600 hover:bg-indigo-500 text-white'
-                    )}
-                >
-                    Confirmar ({myDays.length})
-                </button>
+                    <button
+                        disabled={sessionReservations.length === 0}
+                        onClick={() => setShowConfirmModal(true)}
+                        className={cn(
+                            'px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-lg font-semibold text-sm sm:text-base transition-all',
+                            sessionReservations.length === 0
+                                ? 'bg-neutral-700 text-neutral-400 cursor-not-allowed'
+                                : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                        )}
+                    >
+                        Confirmar ({sessionReservations.length})
+                    </button>
 
                 </div>
             </div>
@@ -263,7 +280,10 @@ export function Calendar({ user, onLogout }) {
                             Cancelar
                         </button>
                         <button
-                            onClick={() => setShowConfirmModal(false)}
+                            onClick={() => {
+                                setShowConfirmModal(false);
+                                setSessionReservations([]);
+                            }}
                             className="px-3 sm:px-4 py-2 bg-indigo-600 rounded-lg font-bold text-sm"
                         >
                             Confirmar
@@ -272,7 +292,7 @@ export function Calendar({ user, onLogout }) {
                 }
             >
                 <ul className="space-y-2">
-                    {myDays.map(d => (
+                    {sessionReservations.map(d => (
                         <li
                             key={d}
                             className="bg-neutral-700 rounded-lg px-3 py-2 text-xs sm:text-sm"

@@ -1,29 +1,39 @@
 import { useEffect, useState } from 'react';
 import { onAuthChange } from '../services/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../services/firebase';
 
 export function useAuth() {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        let mounted = true;
+        const unsubscribe = onAuthChange(async (firebaseUser) => {
+            if (!firebaseUser) {
+                setUser(null);
+                setLoading(false);
+                return;
+            }
 
-        const unsubscribe = onAuthChange(firebaseUser => {
-            if (!mounted) return;
+            // 🔹 Load Firestore profile
+            const snap = await getDoc(doc(db, 'users', firebaseUser.uid));
+            const profile = snap.exists() ? snap.data() : {};
 
-            setUser(firebaseUser);
+            setUser({
+                ...firebaseUser,
+                role: profile.role ?? 'user'
+            });
+
             setLoading(false);
         });
 
-        return () => {
-            mounted = false;
-            unsubscribe();
-        };
+        return unsubscribe;
     }, []);
 
     return {
         user,
         loading,
-        isAuthenticated: !!user
+        isAuthenticated: !!user,
+        isAdmin: user?.role === 'admin'
     };
 }
