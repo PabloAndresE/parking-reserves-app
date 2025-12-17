@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'; 
+import React, { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
     format,
@@ -82,6 +82,7 @@ export function Calendar({ user, onLogout }) {
             return;
         }
 
+        // Optimistic update
         setSessionReservations(prev => [...prev, dateStr].sort());
 
         const result = await reserve(dateStr);
@@ -114,9 +115,14 @@ export function Calendar({ user, onLogout }) {
     ===================== */
 
     return (
-        <div className="bg-neutral-900 text-white p-3 sm:p-4 flex justify-center">
-
-            <div className="max-w-4xl w-full grid grid-rows-[auto_auto_auto] gap-3 sm:gap-4">
+        <div className="flex-1 bg-neutral-900 text-white p-3 sm:p-4 pb-32 grid place-items-center overflow-hidden relative">
+            <div
+                className="
+                    max-w-5xl w-full h-full
+                    grid grid-rows-[auto_1fr_auto]
+                    gap-6 sm:gap-8
+                "
+            >
 
                 {/* Header */}
                 <div className="flex justify-between items-center gap-3">
@@ -137,8 +143,9 @@ export function Calendar({ user, onLogout }) {
                     </button>
                 </div>
 
+
                 {/* Calendar */}
-                <div className="bg-neutral-800/50 rounded-2xl p-3 sm:p-4 border border-neutral-700 grid grid-rows-[auto_auto_1fr] min-h-[520px]">
+                <div className="bg-neutral-800/50 rounded-2xl p-3 sm:p-4 border border-neutral-700 grid grid-rows-[auto_auto_1fr] overflow-hidden">
 
                     {/* Month header */}
                     <div className="flex items-center justify-between mb-2 gap-2">
@@ -147,10 +154,10 @@ export function Calendar({ user, onLogout }) {
                         </h2>
                         <div className="flex gap-1 sm:gap-2">
                             <button onClick={() => setCurrentDate(subMonths(currentDate, 1))} className="p-1 hover:bg-neutral-700 rounded">
-                                <ChevronLeft size={20} />
+                                <ChevronLeft size={20} className="sm:w-6 sm:h-6" />
                             </button>
                             <button onClick={() => setCurrentDate(addMonths(currentDate, 1))} className="p-1 hover:bg-neutral-700 rounded">
-                                <ChevronRight size={20} />
+                                <ChevronRight size={20} className="sm:w-6 sm:h-6" />
                             </button>
                         </div>
                     </div>
@@ -165,7 +172,7 @@ export function Calendar({ user, onLogout }) {
                     </div>
 
                     {/* Days */}
-                    <div className="grid grid-cols-7 grid-rows-6 gap-1 sm:gap-1.5 h-full">
+                    <div className="grid grid-cols-7 gap-1 sm:gap-1.5 h-full content-between">
                         {calendarDays.map(day => {
                             const dateStr = format(day, 'yyyy-MM-dd');
                             const status = getStatus(dateStr);
@@ -175,6 +182,7 @@ export function Calendar({ user, onLogout }) {
                             const isWeekendDay = isWeekend(day);
                             const isMine = status.users.includes(user.uid);
                             const isFull = status.isFull;
+
                             const isDisabled = !isCurrentMonth || isPastDay || isWeekendDay;
 
                             let bg = 'bg-neutral-900/50';
@@ -191,19 +199,19 @@ export function Calendar({ user, onLogout }) {
                                 text = 'text-neutral-600';
                             }
 
-                            if (isMine && !isDisabled) {
+                            if (!isDisabled) {
                                 if (sessionReservations.includes(dateStr)) {
-                                    bg = 'bg-[#B4B4E6] hover:brightness-110';
-                                    border = 'border-[#B4B4E6]';
-                                    text = 'text-neutral-900';
-                                } else {
                                     bg = 'bg-indigo-600 hover:bg-indigo-500';
                                     border = 'border-indigo-400';
                                     text = 'text-white';
+                                } else if (isMine) {
+                                    bg = 'bg-[#6961A3] hover:brightness-110';
+                                    border = 'border-[#6961A3]';
+                                    text = 'text-neutral-900';
+                                } else if (isFull) {
+                                    bg = 'bg-red-900/20';
+                                    text = 'text-neutral-500';
                                 }
-                            } else if (isFull && !isDisabled) {
-                                bg = 'bg-red-900/20';
-                                text = 'text-neutral-500';
                             }
 
                             if (isToday(day)) {
@@ -216,20 +224,24 @@ export function Calendar({ user, onLogout }) {
                                     disabled={isDisabled}
                                     onClick={() => toggleDay(day)}
                                     className={cn(
-                                        'relative rounded-md sm:rounded-lg border p-1 flex flex-col justify-between h-full',
+                                        'relative rounded-md sm:rounded-lg border p-1 flex flex-col justify-between',
                                         'transition-all duration-150 ease-out',
+                                        'aspect-[4/3]',
                                         !isDisabled && 'hover:scale-[1.02] active:scale-[0.98]',
+                                        isMine && !isDisabled && (sessionReservations.includes(dateStr) ? 'shadow-md shadow-indigo-500/30' : 'shadow-md shadow-[#B4B4E6]/30'),
                                         bg,
                                         text,
                                         border,
                                         isDisabled && 'opacity-50 cursor-not-allowed'
                                     )}
                                 >
+                                    {/* Day number */}
                                     <span className="font-semibold text-sm sm:text-base leading-none">
                                         {format(day, 'd')}
                                     </span>
 
-                                    <div className="flex flex-col gap-0.5 items-end text-[10px] sm:text-xs">
+                                    {/* Users */}
+                                    <div className="flex flex-col gap-0.5 items-end text-[10px] sm:text-xs leading-tight">
                                         {status.users.map(uid => (
                                             <span
                                                 key={uid}
@@ -248,25 +260,31 @@ export function Calendar({ user, onLogout }) {
                             );
                         })}
                     </div>
+
                 </div>
 
-                {/* Confirm new reservations */}
-                <div className="flex justify-end">
+                {/* Confirm button - FIXED FOOTER */}
+                <div className="
+                    fixed bottom-11 left-0 w-full p-4 bg-transparent z-50
+                    flex justify-end
+                ">
                     <button
                         disabled={sessionReservations.length === 0}
                         onClick={() => setShowConfirmModal(true)}
                         className={cn(
-                            'px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm transition-all',
+                            'px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-lg font-semibold text-sm sm:text-base transition-all',
                             sessionReservations.length === 0
-                                ? 'bg-neutral-700 text-neutral-400 cursor-not-allowed'
+                                ? 'bg-indigo-600/25 text-white/50 cursor-not-allowed'
                                 : 'bg-indigo-600 hover:bg-indigo-500 text-white'
                         )}
                     >
                         Confirmar ({sessionReservations.length})
                     </button>
+
                 </div>
             </div>
 
+            {/* Modal */}
             <Modal
                 open={showConfirmModal}
                 title="Confirmar reservas"
@@ -274,7 +292,7 @@ export function Calendar({ user, onLogout }) {
                     <>
                         <button
                             onClick={() => setShowConfirmModal(false)}
-                            className="px-3 py-2 bg-neutral-700 rounded-lg text-sm"
+                            className="px-3 sm:px-4 py-2 bg-neutral-700 rounded-lg text-sm"
                         >
                             Cancelar
                         </button>
@@ -283,7 +301,7 @@ export function Calendar({ user, onLogout }) {
                                 setShowConfirmModal(false);
                                 setSessionReservations([]);
                             }}
-                            className="px-3 py-2 bg-indigo-600 rounded-lg font-bold text-sm"
+                            className="px-3 sm:px-4 py-2 bg-indigo-600 rounded-lg font-bold text-sm"
                         >
                             Confirmar
                         </button>
@@ -292,7 +310,10 @@ export function Calendar({ user, onLogout }) {
             >
                 <ul className="space-y-2">
                     {sessionReservations.map(d => (
-                        <li key={d} className="bg-neutral-700 rounded-lg px-3 py-2 text-xs">
+                        <li
+                            key={d}
+                            className="bg-neutral-700 rounded-lg px-3 py-2 text-xs sm:text-sm"
+                        >
                             {d}
                         </li>
                     ))}
@@ -306,6 +327,7 @@ export function Calendar({ user, onLogout }) {
                 onConfirm={confirmCancelReservation}
             />
 
+            {/* Toast */}
             {toast && <Toast message={toast.message} type={toast.type} />}
         </div>
     );
