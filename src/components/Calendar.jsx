@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'; 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
     format,
@@ -21,11 +21,15 @@ import { useParkingReservations } from '../hooks/useParkingReservations';
 import { useToast } from '../hooks/useToast';
 import { Modal } from './Modal';
 import { Toast } from './Toast';
+import { CancelReservationModal } from './CancelReservationModal';
 
 export function Calendar({ user, onLogout }) {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [showConfirmModal, setShowConfirmModal] = useState(false);
-    const [sessionReservations, setSessionReservations] = useState([]); // [NEW] Track session reservations
+    const [sessionReservations, setSessionReservations] = useState([]);
+
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [dayToCancel, setDayToCancel] = useState(null);
 
     const {
         reserve,
@@ -73,24 +77,36 @@ export function Calendar({ user, onLogout }) {
         const status = getStatus(dateStr);
 
         if (status.users.includes(user.uid)) {
-            await cancel(dateStr);
-            setSessionReservations(prev => prev.filter(d => d !== dateStr)); // [NEW] Remove from session
+            setDayToCancel(dateStr);
+            setShowCancelModal(true);
             return;
         }
 
-        // [NEW] Optimistic update: Add to session immediately
         setSessionReservations(prev => [...prev, dateStr].sort());
 
         const result = await reserve(dateStr);
 
         if (result?.reason === 'DAY_FULL') {
             showToast('Este día ya está completo');
-            // Revert optimistic update
             setSessionReservations(prev => prev.filter(d => d !== dateStr));
         } else if (!result?.ok) {
-            // Revert on other errors
             setSessionReservations(prev => prev.filter(d => d !== dateStr));
         }
+    };
+
+    const confirmCancelReservation = async () => {
+        if (!dayToCancel) return;
+
+        await cancel(dayToCancel);
+        setSessionReservations(prev => prev.filter(d => d !== dayToCancel));
+
+        setDayToCancel(null);
+        setShowCancelModal(false);
+    };
+
+    const closeCancelModal = () => {
+        setDayToCancel(null);
+        setShowCancelModal(false);
     };
 
     /* =====================
@@ -98,20 +114,14 @@ export function Calendar({ user, onLogout }) {
     ===================== */
 
     return (
-        <div className="flex-1 bg-neutral-900 text-white p-3 sm:p-4 grid place-items-center overflow-hidden">
-            <div
-                className="
-                    max-w-4xl w-full h-full
-                    grid grid-rows-[auto_1fr_auto]
-                    gap-3 sm:gap-4
-                "
-            >
+        <div className="bg-neutral-900 text-white p-3 sm:p-4 flex justify-center">
+
+            <div className="max-w-4xl w-full grid grid-rows-[auto_auto_auto] gap-3 sm:gap-4">
 
                 {/* Header */}
                 <div className="flex justify-between items-center gap-3">
                     <div className="min-w-0">
                         <h2 className="text-2xl sm:text-3xl font-extrabold truncate">
-
                             Hola, {user.displayName ?? user.email}
                         </h2>
                         <p className="text-neutral-400 text-xs sm:text-sm">
@@ -127,9 +137,8 @@ export function Calendar({ user, onLogout }) {
                     </button>
                 </div>
 
-
                 {/* Calendar */}
-                <div className="bg-neutral-800/50 rounded-2xl p-3 sm:p-4 border border-neutral-700 grid grid-rows-[auto_auto_1fr] overflow-hidden">
+                <div className="bg-neutral-800/50 rounded-2xl p-3 sm:p-4 border border-neutral-700 grid grid-rows-[auto_auto_1fr] min-h-[520px]">
 
                     {/* Month header */}
                     <div className="flex items-center justify-between mb-2 gap-2">
@@ -138,10 +147,10 @@ export function Calendar({ user, onLogout }) {
                         </h2>
                         <div className="flex gap-1 sm:gap-2">
                             <button onClick={() => setCurrentDate(subMonths(currentDate, 1))} className="p-1 hover:bg-neutral-700 rounded">
-                                <ChevronLeft size={20} className="sm:w-6 sm:h-6" />
+                                <ChevronLeft size={20} />
                             </button>
                             <button onClick={() => setCurrentDate(addMonths(currentDate, 1))} className="p-1 hover:bg-neutral-700 rounded">
-                                <ChevronRight size={20} className="sm:w-6 sm:h-6" />
+                                <ChevronRight size={20} />
                             </button>
                         </div>
                     </div>
@@ -156,7 +165,7 @@ export function Calendar({ user, onLogout }) {
                     </div>
 
                     {/* Days */}
-                    <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
+                    <div className="grid grid-cols-7 grid-rows-6 gap-1 sm:gap-1.5 h-full">
                         {calendarDays.map(day => {
                             const dateStr = format(day, 'yyyy-MM-dd');
                             const status = getStatus(dateStr);
@@ -166,7 +175,6 @@ export function Calendar({ user, onLogout }) {
                             const isWeekendDay = isWeekend(day);
                             const isMine = status.users.includes(user.uid);
                             const isFull = status.isFull;
-
                             const isDisabled = !isCurrentMonth || isPastDay || isWeekendDay;
 
                             let bg = 'bg-neutral-900/50';
@@ -185,15 +193,14 @@ export function Calendar({ user, onLogout }) {
 
                             if (isMine && !isDisabled) {
                                 if (sessionReservations.includes(dateStr)) {
-                                    bg = 'bg-indigo-600 hover:bg-indigo-500';
-                                    border = 'border-indigo-400';
-                                    text = 'text-white';
-                                } else {
                                     bg = 'bg-[#B4B4E6] hover:brightness-110';
                                     border = 'border-[#B4B4E6]';
                                     text = 'text-neutral-900';
+                                } else {
+                                    bg = 'bg-indigo-600 hover:bg-indigo-500';
+                                    border = 'border-indigo-400';
+                                    text = 'text-white';
                                 }
-                                // text = 'text-white'; // Removed global override
                             } else if (isFull && !isDisabled) {
                                 bg = 'bg-red-900/20';
                                 text = 'text-neutral-500';
@@ -209,25 +216,20 @@ export function Calendar({ user, onLogout }) {
                                     disabled={isDisabled}
                                     onClick={() => toggleDay(day)}
                                     className={cn(
-                                        'relative rounded-md sm:rounded-lg border p-1 flex flex-col justify-between',
+                                        'relative rounded-md sm:rounded-lg border p-1 flex flex-col justify-between h-full',
                                         'transition-all duration-150 ease-out',
-                                        'aspect-[4/3]',
                                         !isDisabled && 'hover:scale-[1.02] active:scale-[0.98]',
-                                        isMine && !isDisabled && (sessionReservations.includes(dateStr) ? 'shadow-md shadow-indigo-500/30' : 'shadow-md shadow-[#B4B4E6]/30'),
                                         bg,
                                         text,
                                         border,
                                         isDisabled && 'opacity-50 cursor-not-allowed'
                                     )}
                                 >
-                                    {/* Day number */}
                                     <span className="font-semibold text-sm sm:text-base leading-none">
-
                                         {format(day, 'd')}
                                     </span>
 
-                                    {/* Users */}
-                                    <div className="flex flex-col gap-0.5 items-end text-[10px] sm:text-xs leading-tight">
+                                    <div className="flex flex-col gap-0.5 items-end text-[10px] sm:text-xs">
                                         {status.users.map(uid => (
                                             <span
                                                 key={uid}
@@ -246,16 +248,15 @@ export function Calendar({ user, onLogout }) {
                             );
                         })}
                     </div>
-
                 </div>
 
-                {/* Confirm button */}
+                {/* Confirm new reservations */}
                 <div className="flex justify-end">
                     <button
                         disabled={sessionReservations.length === 0}
                         onClick={() => setShowConfirmModal(true)}
                         className={cn(
-                            'px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-lg font-semibold text-sm sm:text-base transition-all',
+                            'px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm transition-all',
                             sessionReservations.length === 0
                                 ? 'bg-neutral-700 text-neutral-400 cursor-not-allowed'
                                 : 'bg-indigo-600 hover:bg-indigo-500 text-white'
@@ -263,11 +264,9 @@ export function Calendar({ user, onLogout }) {
                     >
                         Confirmar ({sessionReservations.length})
                     </button>
-
                 </div>
             </div>
 
-            {/* Modal */}
             <Modal
                 open={showConfirmModal}
                 title="Confirmar reservas"
@@ -275,7 +274,7 @@ export function Calendar({ user, onLogout }) {
                     <>
                         <button
                             onClick={() => setShowConfirmModal(false)}
-                            className="px-3 sm:px-4 py-2 bg-neutral-700 rounded-lg text-sm"
+                            className="px-3 py-2 bg-neutral-700 rounded-lg text-sm"
                         >
                             Cancelar
                         </button>
@@ -284,7 +283,7 @@ export function Calendar({ user, onLogout }) {
                                 setShowConfirmModal(false);
                                 setSessionReservations([]);
                             }}
-                            className="px-3 sm:px-4 py-2 bg-indigo-600 rounded-lg font-bold text-sm"
+                            className="px-3 py-2 bg-indigo-600 rounded-lg font-bold text-sm"
                         >
                             Confirmar
                         </button>
@@ -293,17 +292,20 @@ export function Calendar({ user, onLogout }) {
             >
                 <ul className="space-y-2">
                     {sessionReservations.map(d => (
-                        <li
-                            key={d}
-                            className="bg-neutral-700 rounded-lg px-3 py-2 text-xs sm:text-sm"
-                        >
+                        <li key={d} className="bg-neutral-700 rounded-lg px-3 py-2 text-xs">
                             {d}
                         </li>
                     ))}
                 </ul>
             </Modal>
 
-            {/* Toast */}
+            <CancelReservationModal
+                open={showCancelModal}
+                dateStr={dayToCancel}
+                onCancel={closeCancelModal}
+                onConfirm={confirmCancelReservation}
+            />
+
             {toast && <Toast message={toast.message} type={toast.type} />}
         </div>
     );
