@@ -12,13 +12,11 @@ function App() {
         return <div className="text-white">Cargando…</div>;
     }
 
-    if (!isAuthenticated) {
-        return <Login />;
-    }
-
     return (
         <div className="flex flex-col min-h-screen">
-            {isAdmin ? (
+            {!isAuthenticated ? (
+                <Login />
+            ) : isAdmin ? (
                 <AdminPage
                     user={user}
                     onBack={logout}
