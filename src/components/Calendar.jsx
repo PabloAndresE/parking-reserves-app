@@ -267,23 +267,25 @@ export function Calendar({ user, onLogout }) {
                 </div>
 
                 {/* Confirm button - FIXED FOOTER */}
+                {/* Confirm button - FIXED FOOTER */}
                 <div className="
-                    fixed bottom-11 left-0 w-full p-4 bg-transparent z-50
-                    flex justify-end
+                    fixed bottom-16 left-0 w-full z-50 pointer-events-none
                 ">
-                    <button
-                        disabled={sessionReservations.length === 0}
-                        onClick={() => setShowConfirmModal(true)}
-                        className={cn(
-                            'px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-lg font-semibold text-sm sm:text-base transition-all',
-                            sessionReservations.length === 0
-                                ? 'bg-indigo-600/25 text-white/50 cursor-not-allowed'
-                                : 'bg-indigo-600 hover:bg-indigo-500 text-white'
-                        )}
-                    >
-                        Confirmar ({sessionReservations.length})
-                    </button>
-
+                    <div className="max-w-5xl w-full mx-auto px-3 sm:px-4 flex justify-end">
+                        <button
+                            disabled={sessionReservations.length === 0}
+                            onClick={() => setShowConfirmModal(true)}
+                            className={cn(
+                                'pointer-events-auto', // Re-enable clicks
+                                'px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-lg font-semibold text-sm sm:text-base transition-all shadow-lg',
+                                sessionReservations.length === 0
+                                    ? 'bg-[#25234B] text-[#9291A5] cursor-not-allowed'
+                                    : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                            )}
+                        >
+                            Confirmar ({sessionReservations.length})
+                        </button>
+                    </div>
                 </div>
             </div>
 
