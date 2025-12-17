@@ -85,14 +85,17 @@ export function Calendar({ user, onLogout }) {
         // Optimistic update
         setSessionReservations(prev => [...prev, dateStr].sort());
 
-        const result = await reserve(dateStr);
+        // Defer network call to allow UI to paint first
+        setTimeout(async () => {
+            const result = await reserve(dateStr);
 
-        if (result?.reason === 'DAY_FULL') {
-            showToast('Este día ya está completo');
-            setSessionReservations(prev => prev.filter(d => d !== dateStr));
-        } else if (!result?.ok) {
-            setSessionReservations(prev => prev.filter(d => d !== dateStr));
-        }
+            if (result?.reason === 'DAY_FULL') {
+                showToast('Este día ya está completo');
+                setSessionReservations(prev => prev.filter(d => d !== dateStr));
+            } else if (!result?.ok) {
+                setSessionReservations(prev => prev.filter(d => d !== dateStr));
+            }
+        }, 0);
     };
 
     const confirmCancelReservation = async () => {
