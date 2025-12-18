@@ -1,6 +1,6 @@
 import React from 'react';
-import { cn } from '../services/utils';
-import { Modal } from './Modal';
+import { cn } from '../../services/utils';
+import { Modal } from '../Modal';
 
 export function AdminEditReservation({
     open,
@@ -12,7 +12,10 @@ export function AdminEditReservation({
     onRemoveUser,
     onAddUser
 }) {
-    if (!date) return null;
+    const [error, setError] = React.useState(null);
+    React.useEffect(() => {
+            setError(null);
+        }, [date, open]);
 
     return (
         <Modal
@@ -74,7 +77,13 @@ export function AdminEditReservation({
                         onChange={(e) => {
                             const uid = e.target.value;
                             if (!uid) return;
+                            if (status.isFull) {
+                                setError('Este día ya tiene el cupo completo');
+                                e.target.value = '';
+                                return;
+                                }
                             onAddUser(uid);
+                            setError(null);
                             e.target.value = '';
                         }}
                     >
@@ -93,6 +102,13 @@ export function AdminEditReservation({
                 </div>
 
             </div>
+            {error && (
+                <div className="mt-4 border-t border-neutral-700 pt-3">
+                    <div className="bg-red-900/20 text-red-400 text-xs rounded-lg px-3 py-2">
+                        {error}
+                    </div>
+                </div>
+            )}
         </Modal>
     );
 }

@@ -96,12 +96,40 @@ export function useParkingReservations(currentUser) {
         [usersById]
     );
 
+     /* =====================
+       Admin actions
+    ===================== */
+
+    const reserveAsAdmin = async (date, uid) => {
+        const result = await saveReservation(date, uid);
+        await loadDay(date);
+        return result;
+    };
+
+    const cancelAsAdmin = async (date, uid) => {
+        await removeReservation(date, uid);
+        await loadDay(date);
+    };
+
+    /* =====================
+       Admin helpers
+    ===================== */
+
+    const getAllUsers = useCallback(() => {
+        return Object.entries(usersById).map(([uid, name]) => ({
+            uid,
+            displayName: name
+        }));
+    }, [usersById]);
     return {
         getStatus,
         reserve,
         cancel,
+        reserveAsAdmin,
+        cancelAsAdmin,
         loadDay,
         getUserReservations,
-        getUserName
+        getUserName,
+        getAllUsers
     };
 }

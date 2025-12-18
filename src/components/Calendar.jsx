@@ -21,7 +21,10 @@ import { useParkingReservations } from '../hooks/useParkingReservations';
 import { useToast } from '../hooks/useToast';
 import { Modal } from './Modal';
 import { Toast } from './Toast';
+import { ROLE_CAPABILITIES } from '../security/roleCapabilities';
 import { CancelReservationModal } from './CancelReservationModal';
+import { AdminEditReservation } from './admin/AdminEditReservation';
+import { canReserveDay } from '../domain/reservations/canReserveDay';
 
 export function Calendar({ user, onLogout }) {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -31,13 +34,23 @@ export function Calendar({ user, onLogout }) {
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [dayToCancel, setDayToCancel] = useState(null);
 
+    const [showAdminEditModal, setShowAdminEditModal] = useState(false);
+    const [adminDay, setAdminDay] = useState(null);
+
+    const capabilities =
+        ROLE_CAPABILITIES[user.role] ?? ROLE_CAPABILITIES.user;
+
+
     const {
         reserve,
         cancel,
+        reserveAsAdmin,
+        cancelAsAdmin,
         getStatus,
         getUserReservations,
         loadDay,
-        getUserName
+        getUserName,
+        getAllUsers
     } = useParkingReservations(user.uid);
 
     const { toast, showToast } = useToast();
@@ -71,9 +84,21 @@ export function Calendar({ user, onLogout }) {
     ===================== */
 
     const toggleDay = async (day) => {
-        if (day < startOfToday() || isWeekend(day)) return;
-
+        if (
+            !capabilities.editPastDays &&
+            (day < startOfToday() || isWeekend(day))
+        ) {
+            return;
+        }
+        
         const dateStr = format(day, 'yyyy-MM-dd');
+        
+        if (capabilities.openAdminModal) {
+            setAdminDay(dateStr);
+            setShowAdminEditModal(true);
+            return;
+        }
+
         const status = getStatus(dateStr);
 
         if (status.users.includes(user.uid)) {
@@ -82,20 +107,20 @@ export function Calendar({ user, onLogout }) {
             return;
         }
 
-        // Optimistic update
+        if (status.isFull) {
+            showToast('Este día ya está completo');
+            return;
+        }
+        
+        // Optimistic update solo si es válido
         setSessionReservations(prev => [...prev, dateStr].sort());
-
-        // Defer network call to allow UI to paint first
-        setTimeout(async () => {
-            const result = await reserve(dateStr);
-
-            if (result?.reason === 'DAY_FULL') {
-                showToast('Este día ya está completo');
-                setSessionReservations(prev => prev.filter(d => d !== dateStr));
-            } else if (!result?.ok) {
-                setSessionReservations(prev => prev.filter(d => d !== dateStr));
-            }
-        }, 0);
+        
+        const result = await reserve(dateStr);
+        
+        // fallback por seguridad
+        if (!result?.ok) {
+            setSessionReservations(prev => prev.filter(d => d !== dateStr));
+        }
     };
 
     const confirmCancelReservation = async () => {
@@ -134,7 +159,9 @@ export function Calendar({ user, onLogout }) {
                             Hola, {user.displayName ?? user.email}
                         </h2>
                         <p className="text-neutral-400 text-xs sm:text-sm">
-                            Reserva tus días de parqueo
+                        {capabilities.openAdminModal
+                            ? 'Modo de gestión activo'
+                            : 'Reserva tus días de parqueo'}
                         </p>
                     </div>
 
@@ -186,7 +213,10 @@ export function Calendar({ user, onLogout }) {
                             const isMine = status.users.includes(user.uid);
                             const isFull = status.isFull;
 
-                            const isDisabled = !isCurrentMonth || isPastDay || isWeekendDay;
+                            const isDisabled =
+                                !isCurrentMonth ||
+                                (!capabilities.editPastDays && (isPastDay || isWeekendDay));
+
 
                             let bg = 'bg-neutral-900/50';
                             let text = 'text-neutral-300';
@@ -197,10 +227,14 @@ export function Calendar({ user, onLogout }) {
                                 text = 'text-neutral-600';
                             }
 
-                            if (isPastDay || isWeekendDay) {
+                            if (
+                                !capabilities.editPastDays &&
+                                (isPastDay || isWeekendDay)
+                            ) {
                                 bg = 'bg-neutral-900/10';
                                 text = 'text-neutral-600';
                             }
+                            
 
                             if (!isDisabled) {
                                 if (sessionReservations.includes(dateStr)) {
@@ -330,6 +364,25 @@ export function Calendar({ user, onLogout }) {
                 dateStr={dayToCancel}
                 onCancel={closeCancelModal}
                 onConfirm={confirmCancelReservation}
+            />
+            <AdminEditReservation
+                open={showAdminEditModal}
+                date={adminDay}
+                status={adminDay ? getStatus(adminDay) : { users: [], count: 0, isFull: false }}
+                users={getAllUsers ? getAllUsers() : []}
+                getUserName={getUserName}
+                onClose={() => {
+                    setShowAdminEditModal(false);
+                    setAdminDay(null);
+                }}
+                onRemoveUser={async (uid) => {
+                    if (!adminDay) return;
+                    await cancelAsAdmin(adminDay, uid);
+                }}
+                onAddUser={async (uid) => {
+                    if (!adminDay) return;
+                    await reserveAsAdmin(adminDay, uid);
+                }}
             />
 
             {/* Toast */}

@@ -18,7 +18,7 @@ export function useAuth() {
                 return;
             }
 
-            // � COLD START OPTIMIZATION:
+            // COLD START OPTIMIZATION:
             // Don't wait for Firestore (getDoc) to finish. Render immediately as 'user'.
             // If the user is actually 'admin', the UI will update a moment later.
 
