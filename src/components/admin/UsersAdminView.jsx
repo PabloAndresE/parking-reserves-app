@@ -102,6 +102,7 @@ export function UsersAdminView({ user }) {
         });
         return groups;
     }, [reservationsForUser]);
+    
 
     const totalAmount = reservationsForUser.length * PRICE_PER_DAY;
 
@@ -186,7 +187,7 @@ export function UsersAdminView({ user }) {
                                 Este usuario no tiene reservas este mes.
                             </p>
                         ) : (
-                            <div className="space-y-4 max-h-72 overflow-auto">
+                            <div className="space-y-4 max-h-72 scroll-hidden">
 
                                 {Object.entries(groupedByWeek).map(([week, dates]) => (
                                     <div key={week}>

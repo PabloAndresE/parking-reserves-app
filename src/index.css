@@ -115,3 +115,13 @@
 .animate-toast-in {
   animation: toast-in 0.3s ease-out;
 }
+
+.scroll-hidden {
+  overflow: auto;
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE / Edge legacy */
+}
+
+.scroll-hidden::-webkit-scrollbar {
+  display: none;               /* Chrome, Safari, iOS, Android */
+}
