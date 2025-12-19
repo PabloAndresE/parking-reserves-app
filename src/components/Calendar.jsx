@@ -24,7 +24,6 @@ import { Toast } from './Toast';
 import { ROLE_CAPABILITIES } from '../security/roleCapabilities';
 import { CancelReservationModal } from './CancelReservationModal';
 import { AdminEditReservation } from './admin/AdminEditReservation';
-import { canReserveDay } from '../domain/reservations/canReserveDay';
 
 export function Calendar({ user, onLogout }) {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -301,26 +300,28 @@ export function Calendar({ user, onLogout }) {
                 </div>
 
                 {/* Confirm button - FIXED FOOTER */}
-                {/* Confirm button - FIXED FOOTER */}
-                <div className="
-                    fixed bottom-16 left-0 w-full z-50 pointer-events-none
-                ">
-                    <div className="max-w-5xl w-full mx-auto px-3 sm:px-4 flex justify-end">
-                        <button
-                            disabled={sessionReservations.length === 0}
-                            onClick={() => setShowConfirmModal(true)}
-                            className={cn(
-                                'pointer-events-auto', // Re-enable clicks
-                                'px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-lg font-semibold text-sm sm:text-base transition-all shadow-lg',
-                                sessionReservations.length === 0
-                                    ? 'bg-[#25234B] text-[#9291A5] cursor-not-allowed'
-                                    : 'bg-indigo-600 hover:bg-indigo-500 text-white'
-                            )}
-                        >
-                            Confirmar ({sessionReservations.length})
-                        </button>
+                {!capabilities.openAdminModal && (
+                    <div className="
+                        fixed bottom-30 left-0 w-full z-50 pointer-events-none
+                    ">
+                        <div className="max-w-5xl w-full mx-auto px-3 sm:px-4 flex justify-end">
+                            <button
+                                disabled={sessionReservations.length === 0}
+                                onClick={() => setShowConfirmModal(true)}
+                                className={cn(
+                                    'pointer-events-auto',
+                                    'px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-lg font-semibold text-sm sm:text-base transition-all shadow-lg',
+                                    sessionReservations.length === 0
+                                        ? 'bg-[#25234B] text-[#9291A5] cursor-not-allowed'
+                                        : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                                )}
+                            >
+                                Confirmar ({sessionReservations.length})
+                            </button>
+                        </div>
                     </div>
-                </div>
+                )}
+
             </div>
 
             {/* Modal */}

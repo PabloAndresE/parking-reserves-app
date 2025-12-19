@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { cn } from '../../services/utils';
 import { Calendar } from '../Calendar';
+import { UsersAdminView } from './UsersAdminView';
 //import { UsersTable } from './UsersTable'; // puedes dejarlo inline si quieres
 
 export function AdminPage({ user, onBack }) {
     const [tab, setTab] = useState('reservations');
+    const canSeeUsersTab = user?.role === 'admin' || user?.role === 'supervisor';
+
 
     return (
-        <div className="flex-1 bg-neutral-900 text-white p-4 flex flex-col gap-4 overflow-hidden">
+        <div className="flex-1 bg-neutral-900 text-white p-3 pb-24 sm:pb-16 flex flex-col gap-3 overflow-hidden">
+
 
             {/* Header */}
             <div className="flex justify-between items-center">
@@ -28,10 +32,10 @@ export function AdminPage({ user, onBack }) {
 
             {/* Tabs */}
             <div className="flex gap-2 border-b border-neutral-800">
-                {[
-                    { id: 'reservations', label: 'Reservas' },
-                    { id: 'users', label: 'Usuarios' }
-                ].map(t => (
+            {[
+                { id: 'reservations', label: 'Reservas' },
+                canSeeUsersTab && { id: 'users', label: 'Usuarios' }
+                ].filter(Boolean).map(t => (
                     <button
                         key={t.id}
                         onClick={() => setTab(t.id)}
@@ -48,7 +52,8 @@ export function AdminPage({ user, onBack }) {
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-auto">
+
                 {tab === 'reservations' && (
                     <Calendar
                         user={user}
@@ -58,9 +63,10 @@ export function AdminPage({ user, onBack }) {
                     />
                 )}
 
-                {tab === 'users' && (
-                    <UsersAdminView />
+                {tab === 'users' && canSeeUsersTab && (
+                <UsersAdminView user={user} />
                 )}
+
             </div>
         </div>
     );
