@@ -40,6 +40,7 @@ function getWeekRange(dates) {
 
 
 export function UsersAdminView({ user }) {
+    const isAdmin = user?.role === 'admin' || user?.role === 'supervisor';
     const canSee = user?.role === 'admin' || user?.role === 'supervisor';
     if (!canSee) return null;
 
@@ -57,11 +58,21 @@ export function UsersAdminView({ user }) {
         const loadData = async () => {
             setLoading(true);
 
-            const usersSnap = await getDocs(collection(db, 'users'));
             const users = {};
-            usersSnap.forEach(doc => {
-                users[doc.id] = doc.data();
-            });
+
+            if (isAdmin) {
+                const usersSnap = await getDocs(collection(db, 'users'));
+                usersSnap.forEach(doc => {
+                    users[doc.id] = doc.data();
+                });
+            } else {
+                // Usuario normal: solo él mismo
+                users[user.uid] = {
+                    displayName: user.displayName,
+                    email: user.email
+                };
+            }
+
 
             const resSnap = await getDocs(collection(db, 'parkingReservations'));
             const res = {};
@@ -76,6 +87,12 @@ export function UsersAdminView({ user }) {
 
         loadData();
     }, []);
+
+    useEffect(() => {
+        if (!isAdmin) {
+            setSelectedUser(user.uid);
+        }
+    }, [isAdmin, user.uid]);
 
     /* =====================
        Derived data
@@ -114,6 +131,8 @@ export function UsersAdminView({ user }) {
         return <div className="text-sm text-neutral-400">Cargando usuarios…</div>;
     }
 
+
+
     return (
         <div className="h-full flex justify-center">
             <div className="w-full max-w-3xl flex flex-col gap-4">
@@ -122,21 +141,27 @@ export function UsersAdminView({ user }) {
                 <div className="w-full max-w-3xl flex flex-col gap-4">
 
                     <div>
-                        <label className="text-xs text-neutral-400 mb-1 block">
-                            Usuario
-                        </label>
-                        <select
-                            value={selectedUser}
-                            onChange={e => setSelectedUser(e.target.value)}
-                            className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-sm"
-                        >
-                            <option value="">Selecciona un usuario</option>
-                            {Object.entries(usersById).map(([uid, u]) => (
-                                <option key={uid} value={uid}>
-                                    {u.displayName ?? u.email}
-                                </option>
-                            ))}
-                        </select>
+                        {isAdmin && (
+                            <div>
+                                <label className="block text-xs text-neutral-400 mb-1">
+                                    Usuario
+                                </label>
+
+                                <select
+                                    value={selectedUser}
+                                    onChange={e => setSelectedUser(e.target.value)}
+                                    className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-sm"
+                                >
+                                    <option value="">— Selecciona un usuario —</option>
+
+                                    {Object.entries(usersById).map(([uid, u]) => (
+                                        <option key={uid} value={uid}>
+                                            {u.displayName ?? u.email}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
                     </div>
 
                     <div>
