@@ -119,24 +119,27 @@ export function UserPage({ user, onLogout }) {
                     </div>
 
                     {/* Confirm button - FIXED FOOTER */}
-                    <div className="fixed bottom-28 left-0 w-full z-50 pointer-events-none">
-                        <div className="max-w-5xl w-full mx-auto px-3 sm:px-4 flex justify-end">
-                            <button
-                                disabled={sessionReservations.length === 0}
-                                onClick={() => setShowConfirmModal(true)}
-                                className={cn(
-                                    'pointer-events-auto',
-                                    'px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg',
-                                    'font-semibold text-sm sm:text-base transition-all shadow-lg',
-                                    sessionReservations.length === 0
-                                        ? 'bg-[#25234B] text-[#9291A5] cursor-not-allowed'
-                                        : 'bg-indigo-600 hover:bg-indigo-500 text-white'
-                                )}
-                            >
-                                Confirmar ({sessionReservations.length})
-                            </button>
+                    {tab === 'calendar' && (
+                        <div className="fixed bottom-28 left-0 w-full z-50 pointer-events-none">
+                            <div className="max-w-5xl w-full mx-auto px-3 sm:px-4 flex justify-end">
+                                <button
+                                    disabled={sessionReservations.length === 0}
+                                    onClick={() => setShowConfirmModal(true)}
+                                    className={cn(
+                                        'pointer-events-auto',
+                                        'px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg',
+                                        'font-semibold text-sm sm:text-base transition-all shadow-lg',
+                                        sessionReservations.length === 0
+                                            ? 'bg-[#25234B] text-[#9291A5] cursor-not-allowed'
+                                            : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                                    )}
+                                >
+                                    Confirmar ({sessionReservations.length})
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    )}
+
 
                     {/* Confirm modal */}
                     <Modal
