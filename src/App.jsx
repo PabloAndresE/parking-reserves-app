@@ -24,6 +24,7 @@ function App() {
             ) : (
                 <UserPage
                     user={user}
+                    onLogout={logout}
                 />
             )}
             <Footer />

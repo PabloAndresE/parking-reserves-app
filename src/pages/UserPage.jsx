@@ -62,6 +62,7 @@ export function UserPage({ user, onLogout }) {
                             </p>
                         </div>
 
+
                         <button
                             onClick={onLogout}
                             className="
@@ -178,6 +179,18 @@ export function UserPage({ user, onLogout }) {
                             ))}
                         </ul>
                     </Modal>
+
+                    <button onClick={() => {console.log("subscribe"); 
+                    window.Pushwoosh.push(["subscribe"])}}
+                                className="
+                                px-3 sm:px-4 py-2
+                                bg-neutral-800 hover:bg-neutral-700
+                                rounded-lg text-xs sm:text-sm
+                                whitespace-nowrap
+                            "
+                        >
+                        Activar notificaciones
+                        </button>
 
                 </div>
             </div>
