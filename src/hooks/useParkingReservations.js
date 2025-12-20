@@ -16,20 +16,18 @@ export function useParkingReservations(currentUser) {
        Resolve user name
     ===================== */
 
-    const resolveUser = useCallback(
-        async (uid) => {
-            if (usersById[uid]) return usersById[uid];
-
-            const snap = await getDoc(doc(db, 'users', uid));
-            const name = snap.exists()
-                ? snap.data().displayName
-                : uid;
-
-            setUsersById(prev => ({ ...prev, [uid]: name }));
-            return name;
-        },
-        [usersById]
-    );
+    const resolveUser = useCallback(async (uid) => {
+        setUsersById(prev => {
+            if (prev[uid]) return prev;
+            return { ...prev, [uid]: null };
+        });
+    
+        const snap = await getDoc(doc(db, 'users', uid));
+        const name = snap.exists() ? snap.data().displayName : uid;
+    
+        setUsersById(prev => ({ ...prev, [uid]: name }));
+    }, []);
+    
 
     /* =====================
        Load day from storage

@@ -1,7 +1,7 @@
 import { useAuth } from './hooks/useAuth';
-import { Calendar } from './components/Calendar';
-import { AdminPage } from './components/admin/AdminPage';
-import { Login } from './components/Login';
+import { UserPage } from './pages/UserPage';
+import { AdminPage } from './pages/AdminPage';
+import { Login } from './pages/Login';
 import { Footer } from './components/Footer';
 import { logout } from './services/auth';
 
@@ -22,9 +22,8 @@ function App() {
                     onBack={logout}
                 />
             ) : (
-                <Calendar
+                <UserPage
                     user={user}
-                    onLogout={logout}
                 />
             )}
             <Footer />
