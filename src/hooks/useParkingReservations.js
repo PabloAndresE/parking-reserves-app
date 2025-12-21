@@ -1,16 +1,23 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    getDayStatus,
     saveReservation,
     removeReservation
 } from '../services/storage';
 
-import { doc, getDoc } from 'firebase/firestore';
+import {
+    doc,
+    onSnapshot,
+    getDoc
+} from 'firebase/firestore';
+
 import { db } from '../services/firebase';
 
 export function useParkingReservations(currentUser) {
     const [cache, setCache] = useState({});
     const [usersById, setUsersById] = useState({});
+
+    // listeners activos por día
+    const listenersRef = useRef({});
 
     /* =====================
        Resolve user name
@@ -21,33 +28,62 @@ export function useParkingReservations(currentUser) {
             if (prev[uid]) return prev;
             return { ...prev, [uid]: null };
         });
-    
+
         const snap = await getDoc(doc(db, 'users', uid));
         const name = snap.exists() ? snap.data().displayName : uid;
-    
+
         setUsersById(prev => ({ ...prev, [uid]: name }));
     }, []);
-    
 
     /* =====================
-       Load day from storage
+       REALTIME: subscribe day
     ===================== */
 
     const loadDay = useCallback(
-        async (date) => {
-            const status = await getDayStatus(date);
+        (date) => {
+            // evitar listeners duplicados
+            if (listenersRef.current[date]) return;
 
-            setCache(prev => ({ ...prev, [date]: status }));
+            const ref = doc(db, 'parkingReservations', date);
 
-            // precargar nombres de usuarios
-            status.users.forEach(uid => {
-                resolveUser(uid);
+            const unsubscribe = onSnapshot(ref, snap => {
+                if (!snap.exists()) {
+                    setCache(prev => ({
+                        ...prev,
+                        [date]: { users: [], count: 0, isFull: false }
+                    }));
+                    return;
+                }
+
+                const users = snap.data().users ?? [];
+
+                setCache(prev => ({
+                    ...prev,
+                    [date]: {
+                        users,
+                        count: users.length,
+                        isFull: false // si tienes cupo fijo, se puede calcular aquí
+                    }
+                }));
+
+                users.forEach(resolveUser);
             });
 
-            return status;
+            listenersRef.current[date] = unsubscribe;
         },
         [resolveUser]
     );
+
+    /* =====================
+       Cleanup listeners
+    ===================== */
+
+    useEffect(() => {
+        return () => {
+            Object.values(listenersRef.current).forEach(unsub => unsub());
+            listenersRef.current = {};
+        };
+    }, []);
 
     /* =====================
        Get cached status
@@ -60,18 +96,23 @@ export function useParkingReservations(currentUser) {
     );
 
     /* =====================
-       Actions
+       Actions (NO loadDay aquí)
     ===================== */
 
     const reserve = async (date) => {
-        const result = await saveReservation(date, currentUser);
-        await loadDay(date);
-        return result;
+        return saveReservation(date, currentUser);
     };
 
     const cancel = async (date) => {
-        await removeReservation(date, currentUser);
-        await loadDay(date);
+        return removeReservation(date, currentUser);
+    };
+
+    const reserveAsAdmin = async (date, uid) => {
+        return saveReservation(date, uid);
+    };
+
+    const cancelAsAdmin = async (date, uid) => {
+        return removeReservation(date, uid);
     };
 
     /* =====================
@@ -94,21 +135,6 @@ export function useParkingReservations(currentUser) {
         [usersById]
     );
 
-     /* =====================
-       Admin actions
-    ===================== */
-
-    const reserveAsAdmin = async (date, uid) => {
-        const result = await saveReservation(date, uid);
-        await loadDay(date);
-        return result;
-    };
-
-    const cancelAsAdmin = async (date, uid) => {
-        await removeReservation(date, uid);
-        await loadDay(date);
-    };
-
     /* =====================
        Admin helpers
     ===================== */
@@ -119,6 +145,7 @@ export function useParkingReservations(currentUser) {
             displayName: name
         }));
     }, [usersById]);
+
     return {
         getStatus,
         reserve,

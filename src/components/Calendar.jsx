@@ -340,11 +340,16 @@ export function Calendar({ user, onSessionChange, confirmToken }) {
                 }}
                 onRemoveUser={async uid => {
                     if (!adminDay) return;
+                
                     await cancelAsAdmin(adminDay, uid);
+                    await loadDay(adminDay);
                 }}
+                
                 onAddUser={async uid => {
                     if (!adminDay) return;
+                
                     await reserveAsAdmin(adminDay, uid);
+                    await loadDay(adminDay);
                 }}
             />
 

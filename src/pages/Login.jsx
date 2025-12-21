@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { login } from '../services/auth';
 import logo from '../assets/logo.svg';
+import { requestPushOnLogin } from '../services/pushwooshService';
 
 export function Login() {
     const [email, setEmail] = useState('');
@@ -14,7 +15,13 @@ export function Login() {
         setLoading(true);
 
         try {
-            await login(email, password);
+            const user = await login(email, password);
+
+            // ============================
+            // PUSHWOOSH – solicitar permiso al login
+            // ============================
+            requestPushOnLogin(user);
+
         } catch (err) {
             console.error(err.code, err.message);
             setError('Credenciales incorrectas');

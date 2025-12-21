@@ -3,7 +3,7 @@ import { Calendar } from '../components/Calendar';
 import { UserSummaryView } from '../components/user/UserSummaryView';
 import { cn } from '../services/utils';
 import { Modal } from '../components/Modal';
-import { saveReservation } from '../services/storage'; // ✅ [NEW]
+import { saveReservation } from '../services/storage';
 
 export function UserPage({ user, onLogout }) {
     const [tab, setTab] = useState('calendar');
@@ -61,7 +61,6 @@ export function UserPage({ user, onLogout }) {
                                 Gestión de parqueo
                             </p>
                         </div>
-
 
                         <button
                             onClick={onLogout}
@@ -179,18 +178,6 @@ export function UserPage({ user, onLogout }) {
                             ))}
                         </ul>
                     </Modal>
-
-                    <button onClick={() => {console.log("subscribe"); 
-                    window.Pushwoosh.push(["subscribe"])}}
-                                className="
-                                px-3 sm:px-4 py-2
-                                bg-neutral-800 hover:bg-neutral-700
-                                rounded-lg text-xs sm:text-sm
-                                whitespace-nowrap
-                            "
-                        >
-                        Activar notificaciones
-                        </button>
 
                 </div>
             </div>
