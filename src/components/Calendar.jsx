@@ -266,7 +266,9 @@ export function Calendar({ user, onSessionChange, confirmToken }) {
                         }
                     }
 
-                    if (isToday(day)) {
+                    if (isMine && isToday(day )) {
+                        border = 'border-[#F2F2F2]';
+                    } else if (isToday(day) && !isMine) {
                         border = 'border-indigo-500';
                     }
 

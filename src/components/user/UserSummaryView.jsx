@@ -23,7 +23,7 @@ function getWeekKey(dateStr) {
         ) / 7
     );
 
-    return `Semana ${week}`;
+    return `Semana `;
 }
 
 function getWeekRange(dates) {
