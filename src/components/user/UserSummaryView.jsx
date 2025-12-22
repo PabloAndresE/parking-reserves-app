@@ -23,7 +23,7 @@ function getWeekKey(dateStr) {
         ) / 7
     );
 
-    return `Semana `;
+    return `Semana ${week}`;
 }
 
 function getWeekRange(dates) {
@@ -185,7 +185,7 @@ export function UserSummaryView({ userId }) {
                                     <div key={week}>
                                         <div className="flex justify-between items-center mb-2">
                                             <div className="text-xs font-semibold text-neutral-300">
-                                                {week} · {getWeekRange(dates)}
+                                                Semana · {getWeekRange(dates)}
                                             </div>
 
                                             <span className="text-[11px] px-2 py-0.5 rounded-full bg-neutral-700 text-neutral-200">
