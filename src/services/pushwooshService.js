@@ -1,25 +1,41 @@
-import { usePushwoosh } from '../hooks/usePushwoosh';
+import { pwInstance } from './pushwooshClient';
 
-export async function requestPushOnLogin(user) {
-  // 1. Si ya concedió permiso, no molestamos
-  const pwInstance = usePushwoosh();
-  if (Notification.permission === 'granted') {
-    pwInstance.setUserId(user.uid);
-    return;
-  }
+// 1️⃣ SE EJECUTA EN EL CLICK
+export function preRequestPushPermission() {
+    if (Notification.permission === 'default') {
+        pwInstance.subscribe().catch(() => {
+            console.log('Usuario cerró popup');
+        });
+    }
+}
 
-  // 2. Si lo negó antes, NO insistimos
-  if (Notification.permission === 'denied') {
-    console.log('Notificaciones previamente bloqueadas');
-    return;
-  }
+export async function requestPushAfterLogin(user) {
+    if (!user?.uid) return;
 
-  // 3. Caso normal: pedir permiso
-  try {
-    await pwInstance.subscribe();   // muestra popup
-    pwInstance.setUserId(user.uid); // asocia usuario
-    console.log('Push activado al login');
-  } catch (err) {
-    console.log('Usuario no aceptó notificaciones');
-  }
+    let token = null;
+    let attempts = 0;
+
+    while (!token && attempts < 5) {
+        token = await pwInstance.getPushToken();
+        console.log('Pushwoosh token:', token);
+        if (!token) {
+            await new Promise(r => setTimeout(r, 1000));
+        }
+        attempts++;
+    }
+
+    if (token) {
+        pwInstance.setUserId(user.uid);
+        console.log('Pushwoosh userId asociado:', user.uid);
+        return;
+    }
+
+    setTimeout(async () => {
+        const lateToken = await pwInstance.getPushToken();
+        if (lateToken) {
+            pwInstance.setUserId(user.uid);
+
+            console.log('Pushwoosh userId asociado (tardío):', user.uid);
+        }
+    }, 5000);
 }

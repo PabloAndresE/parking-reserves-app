@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { login } from '../services/auth';
 import logo from '../assets/logo.svg';
-import { requestPushOnLogin } from '../services/pushwooshService';
+import { requestPushAfterLogin, preRequestPushPermission } from '../services/pushwooshService';
 
 export function Login() {
     const [email, setEmail] = useState('');
@@ -13,14 +13,16 @@ export function Login() {
         e.preventDefault();
         setError(null);
         setLoading(true);
+        
+        preRequestPushPermission();
 
         try {
+            // 2️⃣ LOGIN NORMAL
             const user = await login(email, password);
+            console.log('LOGIN RETURN:', user);
+            console.log('LOGIN UID:', user?.uid);
+            requestPushAfterLogin(user);
 
-            // ============================
-            // PUSHWOOSH – solicitar permiso al login
-            // ============================
-            requestPushOnLogin(user);
 
         } catch (err) {
             console.error(err.code, err.message);

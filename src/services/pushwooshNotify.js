@@ -1,4 +1,4 @@
-import { usePushwoosh } from '../hooks/usePushwoosh';
+import { usePushwoosh } from './pushwooshClient';
 
 /**
  * Envía notificación al usuario cuando su reserva es cancelada

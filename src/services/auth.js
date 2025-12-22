@@ -10,8 +10,9 @@ import { app } from './firebase';
 
 const auth = getAuth(app);
 
-export function login(email, password) {
-    return signInWithEmailAndPassword(auth, email, password);
+export async function login(email, password) {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    return userCredential.user; 
 }
 
 export function logout() {

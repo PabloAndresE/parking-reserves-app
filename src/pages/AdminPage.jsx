@@ -9,7 +9,7 @@ export function AdminPage({ user, onBack }) {
     return (
         <div className="flex-1 bg-neutral-900 text-white relative overflow-hidden">
 
-            <div className="h-full overflow-y-auto">
+            <div className="h-full overflow-y-auto pb-32">
 
                 <div
                     className="

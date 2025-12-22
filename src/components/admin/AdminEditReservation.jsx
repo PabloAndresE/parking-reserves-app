@@ -1,6 +1,7 @@
 import React from 'react';
 import { cn } from '../../services/utils';
 import { Modal } from '../Modal';
+import { notifyReservationCancelled } from '../../services/pushwooshNotify';
 
 export function AdminEditReservation({
     open,
@@ -13,9 +14,20 @@ export function AdminEditReservation({
     onAddUser
 }) {
     const [error, setError] = React.useState(null);
+
     React.useEffect(() => {
-            setError(null);
-        }, [date, open]);
+        setError(null);
+    }, [date, open]);
+
+    const handleRemoveUser = async (uid) => {
+        try {
+            await onRemoveUser(uid);
+            notifyReservationCancelled(uid, date);
+
+        } catch (err) {
+            console.error('Error al eliminar usuario', err);
+        }
+    };
 
     return (
         <Modal
@@ -55,7 +67,7 @@ export function AdminEditReservation({
                                 </span>
 
                                 <button
-                                    onClick={() => onRemoveUser(uid)}
+                                    onClick={() => handleRemoveUser(uid)}
                                     className="text-xs text-red-400 hover:text-red-300"
                                 >
                                     Eliminar
@@ -81,7 +93,7 @@ export function AdminEditReservation({
                                 setError('Este día ya tiene el cupo completo');
                                 e.target.value = '';
                                 return;
-                                }
+                            }
                             onAddUser(uid);
                             setError(null);
                             e.target.value = '';
@@ -102,6 +114,7 @@ export function AdminEditReservation({
                 </div>
 
             </div>
+
             {error && (
                 <div className="mt-4 border-t border-neutral-700 pt-3">
                     <div className="bg-red-900/20 text-red-400 text-xs rounded-lg px-3 py-2">

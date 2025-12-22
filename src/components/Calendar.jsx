@@ -182,7 +182,7 @@ export function Calendar({ user, onSessionChange, confirmToken }) {
     ===================== */
 
     return (
-        <div className="bg-neutral-800/50 rounded-2xl p-3 sm:p-4 border border-neutral-700 grid grid-rows-[auto_auto_1fr] overflow-hidden">
+        <div className="bg-neutral-800/50 rounded-2xl p-3 sm:p-4 border border-neutral-700 grid grid-rows-[auto_auto_1fr] overflow-hidden min-h-[50vh] sm:min-h-0">
 
             {/* Month header */}
             <div className="flex items-center justify-between mb-2 gap-2">
@@ -276,7 +276,7 @@ export function Calendar({ user, onSessionChange, confirmToken }) {
                             disabled={isDisabled}
                             onClick={() => toggleDay(day)}
                             className={cn(
-                                'relative rounded-md sm:rounded-lg border p-1 flex flex-col justify-between',
+                                'w-full h-18 sm:h-25 relative rounded-md sm:rounded-lg border p-1 flex flex-col justify-between',
                                 'transition-all duration-150 ease-out',
                                 'aspect-[4/3]',
                                 !isDisabled &&
