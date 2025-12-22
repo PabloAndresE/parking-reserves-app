@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faAngleLeft } from '@fortawesome/free-solid-svg-icons';
+
 import { Calendar } from '../components/Calendar';
 import { UsersAdminView } from '../components/admin/UsersAdminView';
 import { cn } from '../services/utils';
@@ -41,10 +44,14 @@ export function AdminPage({ user, onBack }) {
                                 bg-neutral-800 hover:bg-neutral-700
                                 rounded-lg
                                 text-xs sm:text-sm
+                                flex items-center gap-2
                             "
                         >
-                            Volver
+                            <span>Volver</span>
+                            <FontAwesomeIcon icon={faAngleLeft} />
+                            
                         </button>
+
                     </div>
 
                     {/* Tabs */}

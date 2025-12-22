@@ -1,4 +1,10 @@
 import React, { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons';
+import { faReceipt } from '@fortawesome/free-solid-svg-icons';
+import { faCar } from '@fortawesome/free-solid-svg-icons';
+
+
 import { Calendar } from '../components/Calendar';
 import { UserSummaryView } from '../components/user/UserSummaryView';
 import { cn } from '../services/utils';
@@ -69,32 +75,38 @@ export function UserPage({ user, onLogout }) {
                                 bg-neutral-800 hover:bg-neutral-700
                                 rounded-lg text-xs sm:text-sm
                                 whitespace-nowrap
+                                flex items-center gap-2
                             "
                         >
-                            Cerrar sesión
+                            <span>Cerrar sesión</span>
+                            <FontAwesomeIcon icon={faArrowRightFromBracket} />
+                            
                         </button>
                     </div>
 
                     {/* Tabs */}
                     <div className="flex gap-2 border-b border-neutral-800">
                         {[
-                            { id: 'calendar', label: 'Reservar' },
-                            { id: 'summary', label: 'Mi resumen' }
-                        ].map(t => (
+                                { id: 'calendar', label: 'Reservar', icon: faCar },
+                                { id: 'summary', label: 'Mi resumen', icon: faReceipt }
+                            ].map(t => (
                             <button
                                 key={t.id}
                                 onClick={() => setTab(t.id)}
                                 className={cn(
-                                    'px-3 py-2 text-sm border-b-2 transition-colors',
+                                    'px-3 py-2 text-sm border-b-2 transition-colors flex items-center gap-2',
                                     tab === t.id
                                         ? 'border-indigo-500 text-white'
                                         : 'border-transparent text-neutral-400 hover:text-neutral-200'
                                 )}
                             >
-                                {t.label}
+                                <span>{t.label}</span>
+                                {t.icon && <FontAwesomeIcon icon={t.icon} />}
+                                
                             </button>
                         ))}
                     </div>
+
 
                     {/* Content */}
                     <div className="flex-1">

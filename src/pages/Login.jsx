@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faRightToBracket } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { login } from '../services/auth';
 import logo from '../assets/logo.svg';
 import { requestPushAfterLogin, preRequestPushPermission } from '../services/pushwooshService';
@@ -83,10 +86,22 @@ export function Login() {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-400 py-3 rounded font-bold text-white transition-colors"
+                    className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-400 py-3 rounded font-bold text-white transition-colors flex items-center justify-center gap-2"
                 >
-                    {loading ? 'Ingresando…' : 'Entrar'}
+                    {loading ? (
+                        <>
+                            <FontAwesomeIcon icon={faSpinner} spin />
+                            <span>Ingresando…</span>
+                        </>
+                    ) : (
+                        <>
+                            <span>Entrar</span>
+                            <FontAwesomeIcon icon={faRightToBracket} />
+                            
+                        </>
+                    )}
                 </button>
+
             </form>
         </div>
     );
