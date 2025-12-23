@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import { faReceipt } from '@fortawesome/free-solid-svg-icons';
@@ -10,8 +11,16 @@ import { UserSummaryView } from '../components/user/UserSummaryView';
 import { cn } from '../services/utils';
 import { Modal } from '../components/Modal';
 import { saveReservation } from '../services/storage';
+import { useAuth } from '../hooks/useAuth';
 
-export function UserPage({ user, onLogout }) {
+export function UserPage() {
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
+    
+    const handleLogout = async () => {
+        await logout();
+        navigate('/login');
+    };
     const [tab, setTab] = useState('calendar');
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [sessionReservations, setSessionReservations] = useState([]);
@@ -69,7 +78,7 @@ export function UserPage({ user, onLogout }) {
                         </div>
 
                         <button
-                            onClick={onLogout}
+                            onClick={handleLogout}
                             className="
                                 px-3 sm:px-4 py-2
                                 bg-neutral-800 hover:bg-neutral-700
@@ -80,16 +89,15 @@ export function UserPage({ user, onLogout }) {
                         >
                             <span>Cerrar sesión</span>
                             <FontAwesomeIcon icon={faArrowRightFromBracket} />
-                            
                         </button>
                     </div>
 
                     {/* Tabs */}
                     <div className="flex gap-2 border-b border-neutral-800">
                         {[
-                                { id: 'calendar', label: 'Reservar', icon: faCar },
-                                { id: 'summary', label: 'Mi resumen', icon: faReceipt }
-                            ].map(t => (
+                            { id: 'calendar', label: 'Reservar', icon: faCar },
+                            { id: 'summary', label: 'Mi resumen', icon: faReceipt }
+                        ].map(t => (
                             <button
                                 key={t.id}
                                 onClick={() => setTab(t.id)}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRightToBracket } from '@fortawesome/free-solid-svg-icons';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
@@ -11,6 +12,7 @@ export function Login() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -20,17 +22,30 @@ export function Login() {
         preRequestPushPermission();
 
         try {
-            // 2️⃣ LOGIN NORMAL
+            // Perform login
             const user = await login(email, password);
-            console.log('LOGIN RETURN:', user);
-            console.log('LOGIN UID:', user?.uid);
+            console.log('Login successful, user role:', user.role);
+            
+            // Request push notifications
             requestPushAfterLogin(user);
-
-
+            
+            // Store user data in localStorage to ensure it's available immediately
+            localStorage.setItem('parking_user', JSON.stringify({
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                role: user.role
+            }));
+            
+            // Redirect based on role
+            if (user.role === 'admin') {
+                navigate('/admin', { replace: true });
+            } else {
+                navigate('/', { replace: true });
+            }
         } catch (err) {
-            console.error(err.code, err.message);
+            console.error('Login error:', err.code, err.message);
             setError('Credenciales incorrectas');
-        } finally {
             setLoading(false);
         }
     };

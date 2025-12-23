@@ -1,69 +1,101 @@
-import { useEffect, useState } from 'react';
-import { onAuthChange } from '../services/auth';
+import { useEffect, useState, useCallback } from 'react';
+import { onAuthChange, logout as authLogout } from '../services/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 
-export function useAuth() {
+const useAuth = () => {
     const [user, setUser] = useState(() => {
-        const cached = localStorage.getItem('parking_user');
-        return cached ? JSON.parse(cached) : null;
+        try {
+            const cached = localStorage.getItem('parking_user');
+            return cached ? JSON.parse(cached) : null;
+        } catch (error) {
+            console.error('Error parsing user from localStorage:', error);
+            return null;
+        }
     });
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    const updateUser = useCallback((newUserData) => {
+        if (!newUserData) {
+            localStorage.removeItem('parking_user');
+            setUser(null);
+            return;
+        }
+
+        // Only update if the user data has actually changed
+        setUser(prevUser => {
+            const userChanged = !prevUser || 
+                prevUser.uid !== newUserData.uid || 
+                prevUser.role !== newUserData.role;
+                
+            if (userChanged) {
+                localStorage.setItem('parking_user', JSON.stringify(newUserData));
+                return newUserData;
+            }
+            return prevUser;
+        });
+    }, []);
 
     useEffect(() => {
-        const unsubscribe = onAuthChange(async (firebaseUser) => {
+        let isMounted = true;
+
+        const handleAuthChange = async (firebaseUser) => {
+            if (!isMounted) return;
+
             if (!firebaseUser) {
-                setUser(null);
+                updateUser(null);
                 setLoading(false);
                 return;
             }
 
-            // COLD START OPTIMIZATION:
-            // Don't wait for Firestore (getDoc) to finish. Render immediately as 'user'.
-            // If the user is actually 'admin', the UI will update a moment later.
-
-            // Initial user state from firebaseUser, without role yet
-            setUser({
-                uid: firebaseUser.uid,
-                email: firebaseUser.email,
-                displayName: firebaseUser.displayName,
-                role: 'user' // Default role until Firestore loads
-            });
-            setLoading(false); // Stop spinner immediately
-
-            // 🔹 Load Firestore profile (Background Update)
-            getDoc(doc(db, 'users', firebaseUser.uid)).then(snap => {
-                const profile = snap.exists() ? snap.data() : {};
-                const role = profile.role ?? 'user';
-
-                localStorage.setItem(`role_${firebaseUser.uid}`, role);
-
-                const finalUser = {
+            try {
+                // Get user data from Firestore first
+                const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+                const userData = userDoc.exists() ? userDoc.data() : {};
+                
+                const updatedUser = {
                     uid: firebaseUser.uid,
                     email: firebaseUser.email,
-                    displayName: firebaseUser.displayName,
-                    role: role
+                    displayName: firebaseUser.displayName || '',
+                    role: userData.role || 'user'
                 };
 
-                // Persist full session to enable Instant Load next time
-                localStorage.setItem('parking_user', JSON.stringify(finalUser));
+                updateUser(updatedUser);
+            } catch (error) {
+                console.error('Error handling auth change:', error);
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
+        };
 
-                // Update state if needed
-                setUser(prev => {
-                    // If we already have the correct role (from cache), don't update to save re-render
-                    if (prev?.role === role) return prev;
-                    return finalUser;
-                });
-            });
-        });
+        const unsubscribe = onAuthChange(handleAuthChange);
 
-        return unsubscribe;
-    }, []);
+        return () => {
+            isMounted = false;
+            unsubscribe();
+        };
+    }, [updateUser]);
+
+    const logout = useCallback(async () => {
+        try {
+            await authLogout();
+            updateUser(null);
+            return true;
+        } catch (error) {
+            console.error('Error al cerrar sesión:', error);
+            return false;
+        }
+    }, [updateUser]);
 
     return {
         user,
         loading,
         isAuthenticated: !!user,
-        isAdmin: user?.role === 'admin'
+        isAdmin: user?.role === 'admin',
+        logout
     };
-}
+};
+
+export { useAuth };

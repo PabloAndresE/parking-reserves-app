@@ -14,7 +14,7 @@ export function Footer() {
             </p>
 
             <p className="mt-1 text-xs text-neutral-400">
-                Ofipark 2025 ©
+                OfiPark 2025 ©
             </p>
 
             <p className="mt-0.5 text-xs text-neutral-500">

@@ -1,12 +1,21 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleLeft } from '@fortawesome/free-solid-svg-icons';
+import { useAuth } from '../hooks/useAuth';
 
 import { Calendar } from '../components/Calendar';
 import { UsersAdminView } from '../components/admin/UsersAdminView';
 import { cn } from '../services/utils';
 
-export function AdminPage({ user, onBack }) {
+export function AdminPage() {
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
+    
+    const handleBack = async () => {
+        await logout();
+        navigate('/login');
+    };
     const [tab, setTab] = useState('reservations');
 
     return (
@@ -38,7 +47,7 @@ export function AdminPage({ user, onBack }) {
                         </div>
 
                         <button
-                            onClick={onBack}
+                            onClick={handleBack}
                             className="
                                 px-3 sm:px-4 py-2
                                 bg-neutral-800 hover:bg-neutral-700
@@ -47,9 +56,8 @@ export function AdminPage({ user, onBack }) {
                                 flex items-center gap-2
                             "
                         >
-                            <span>Volver</span>
+                            <span>Cerrar sesión</span>
                             <FontAwesomeIcon icon={faAngleLeft} />
-                            
                         </button>
 
                     </div>
