@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRightToBracket } from '@fortawesome/free-solid-svg-icons';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
@@ -81,14 +81,24 @@ export function Login() {
                 />
 
                 {/* Password */}
-                <input
-                    type="password"
-                    placeholder="Contraseña"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    required
-                    className="w-full p-3 rounded bg-neutral-700 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                <div className="relative">
+                    <input
+                        type="password"
+                        placeholder="Contraseña"
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        required
+                        className="w-full p-3 rounded bg-neutral-700 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    <div className="text-right mt-1">
+                        <Link 
+                            to="/forgot-password" 
+                            className="text-sm text-indigo-400 hover:text-indigo-300"
+                        >
+                            ¿Olvidaste tu contraseña?
+                        </Link>
+                    </div>
+                </div>
 
                 {/* Error */}
                 {error && (
