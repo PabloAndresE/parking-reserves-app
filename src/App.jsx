@@ -53,7 +53,7 @@ function ProtectedRoute({ children, requiredAdmin = false }) {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
   if (requiredAdmin && !isAdmin) {

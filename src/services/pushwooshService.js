@@ -25,17 +25,22 @@ export async function requestPushAfterLogin(user) {
     }
 
     if (token) {
-        pwInstance.setUserId(user.uid);
-        console.log('Pushwoosh userId asociado:', user.uid);
+        // Use the registerUser method to set the user ID
+        pwInstance.push((api) => {
+            api.registerUser(user.uid);
+            console.log('Pushwoosh userId asociado:', user.uid);
+        });
         return;
     }
 
     setTimeout(async () => {
         const lateToken = await pwInstance.getPushToken();
         if (lateToken) {
-            pwInstance.setUserId(user.uid);
-
-            console.log('Pushwoosh userId asociado (tardío):', user.uid);
+            // Use the registerUser method to set the user ID
+            pwInstance.push((api) => {
+                api.registerUser(user.uid);
+                console.log('Pushwoosh userId asociado (tardío):', user.uid);
+            });
         }
     }, 5000);
 }
