@@ -127,6 +127,19 @@ export function Login() {
                     )}
                 </button>
 
+                {/* Register Link */}
+                <div className="mt-4 text-center">
+                    <p className="text-sm text-neutral-500">
+                        ¿No tienes una cuenta?{' '}
+                        <Link 
+                            to="/register" 
+                            className="text-indigo-400 hover:text-indigo-300 font-medium hover:underline"
+                        >
+                            Regístrate aquí
+                        </Link>
+                    </p>
+                </div>
+
             </form>
         </div>
     );

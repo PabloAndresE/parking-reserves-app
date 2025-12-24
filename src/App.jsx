@@ -64,6 +64,9 @@ function ProtectedRoute({ children, requiredAdmin = false }) {
 }
 
 function AppContent() {
+  const location = useLocation();
+  const hideFooter = ['/register', '/forgot-password'].includes(location.pathname);
+  
   return (
     <div className="flex flex-col min-h-screen">
       <AuthHandler />
@@ -89,7 +92,7 @@ function AppContent() {
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <Footer />
+      {!hideFooter && <Footer />}
     </div>
   );
 }
