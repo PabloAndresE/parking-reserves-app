@@ -4,24 +4,25 @@ import { useAuth } from './hooks/useAuth';
 import { UserPage } from './pages/UserPage';
 import { AdminPage } from './pages/AdminPage';
 import { Login } from './pages/Login';
+import { Register } from './pages/Register';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { Footer } from './components/Footer';
 
 // Componente para manejar la autenticación y redirecciones
 function AuthHandler() {
   const { user, isAuthenticated, isAdmin, loading } = useAuth();
-  const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (loading) return;
 
     const isLoginPage = location.pathname === '/login';
+    const isRegisterPage = location.pathname === '/register';
     const isForgotPasswordPage = location.pathname === '/forgot-password';
     const isAdminPage = location.pathname.startsWith('/admin');
 
-    // Si es la página de recuperación de contraseña, no hacer redirecciones
-    if (isForgotPasswordPage) return;
+    // Si es una página pública, no hacer redirecciones
+    if (isForgotPasswordPage || isRegisterPage) return;
 
     if (!isAuthenticated) {
       if (!isLoginPage) {
@@ -68,6 +69,7 @@ function AppContent() {
       <AuthHandler />
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route 
           path="/" 
