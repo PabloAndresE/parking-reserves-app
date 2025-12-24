@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRightToBracket } from '@fortawesome/free-solid-svg-icons';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faRightToBracket, faEnvelope, faSpinner, faLock } from '@fortawesome/free-solid-svg-icons';
 import { login } from '../services/auth';
 import logo from '../assets/logo.svg';
 import { requestPushAfterLogin, preRequestPushPermission } from '../services/pushwooshService';
@@ -51,7 +50,7 @@ export function Login() {
     };
 
     return (
-        <div className="min-h-screen flex items-start justify-center bg-neutral-900 pt-25 p-4 pb-24">
+        <div className="min-h-screen flex items-start justify-center bg-neutral-900 pt-35 p-4 pb-24">
             <form
                 onSubmit={handleSubmit}
                 className="bg-neutral-800 p-6 sm:p-8 rounded-xl w-full max-w-sm space-y-5"
@@ -71,25 +70,41 @@ export function Login() {
                 </h2>
 
                 {/* Email */}
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    required
-                    className="w-full p-3 rounded bg-neutral-700 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <FontAwesomeIcon icon={faEnvelope} className="text-neutral-500" />
+                    </div>
+                    <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        className="w-full pl-10 pr-3 py-2 bg-neutral-700 border border-neutral-600 rounded-md text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="Email"
+                        autoComplete="email"
+                        required  
+                    />
+                </div>
 
                 {/* Password */}
                 <div className="relative">
-                    <input
-                        type="password"
-                        placeholder="Contraseña"
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
-                        required
-                        className="w-full p-3 rounded bg-neutral-700 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <FontAwesomeIcon icon={faLock} className="text-neutral-500" />
+                        </div>
+                            <input
+                                id="password"
+                                name="password"
+                                type="password"
+                                placeholder="Contraseña"
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                autoComplete="new-password"
+                                required
+                                className="w-full pl-10 pr-3 py-2 bg-neutral-700 border border-neutral-600 rounded-md text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            />
+                    </div>    
                     <div className="text-right mt-1">
                         <Link 
                             to="/forgot-password" 

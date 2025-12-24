@@ -155,7 +155,7 @@ export function Register() {
                                     value={formData.email}
                                     onChange={handleChange}
                                     className="w-full pl-10 pr-3 py-2 bg-neutral-700 border border-neutral-600 rounded-md text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                    placeholder="tucorreo@ejemplo.com"
+                                    placeholder="correo@ejemplo.com"
                                     autoComplete="email"
                                     required
                                 />
