@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { cn } from '../../services/utils';
 import { Modal } from '../Modal';
 import { notifyReservationCancelled } from '../../services/pushwooshNotify';
@@ -13,19 +13,39 @@ export function AdminEditReservation({
     onRemoveUser,
     onAddUser
 }) {
-    const [error, setError] = React.useState(null);
+    const [error, setError] = useState(null);
+    const [isCancelling, setIsCancelling] = useState(null);
 
     React.useEffect(() => {
         setError(null);
     }, [date, open]);
 
     const handleRemoveUser = async (uid) => {
-        try {
-            await onRemoveUser(uid);
-            notifyReservationCancelled(uid, date);
+        if (!window.confirm(`¿Estás seguro de cancelar la reserva para ${getUserName(uid)}?`)) {
+            return;
+        }
 
+        setIsCancelling(uid);
+        setError(null);
+
+        try {
+            // First remove the user from the reservation
+            await onRemoveUser(uid);
+            
+            // Then send the notification
+            try {
+                await notifyReservationCancelled(uid, date);
+                alert('La reserva ha sido cancelada y se ha notificado al usuario.');
+            } catch (notifyError) {
+                console.error('Error en la notificación:', notifyError);
+                // Continue even if notification fails
+                alert('La reserva ha sido cancelada, pero hubo un error al notificar al usuario.');
+            }
         } catch (err) {
-            console.error('Error al eliminar usuario', err);
+            console.error('Error al cancelar reserva:', err);
+            setError('Error al cancelar la reserva. Por favor, inténtalo de nuevo.');
+        } finally {
+            setIsCancelling(false);
         }
     };
 
@@ -36,9 +56,10 @@ export function AdminEditReservation({
             actions={
                 <button
                     onClick={onClose}
-                    className="px-4 py-2 bg-neutral-700 rounded-lg text-sm"
+                    className="px-4 py-2 bg-neutral-700 rounded-lg text-sm hover:bg-neutral-600 transition-colors"
+                    disabled={isCancelling}
                 >
-                    Cerrar
+                    {isCancelling ? 'Procesando...' : 'Cerrar'}
                 </button>
             }
         >
@@ -56,21 +77,26 @@ export function AdminEditReservation({
                         </p>
                     )}
 
-                    <ul className="space-y-1">
+                    <ul className="space-y-2">
                         {status.users.map(uid => (
                             <li
                                 key={uid}
-                                className="flex justify-between items-center bg-neutral-700/50 px-2 py-1 rounded"
+                                className="flex justify-between items-center bg-neutral-700/50 px-3 py-2 rounded-lg"
                             >
-                                <span className="text-sm truncate">
+                                <span className="text-sm font-medium">
                                     {getUserName(uid)}
                                 </span>
-
                                 <button
                                     onClick={() => handleRemoveUser(uid)}
-                                    className="text-xs text-red-400 hover:text-red-300"
+                                    disabled={isCancelling === uid}
+                                    className={cn(
+                                        "text-xs px-3 py-1 rounded transition-colors",
+                                        isCancelling === uid 
+                                            ? "bg-neutral-600 text-neutral-400" 
+                                            : "bg-red-600/80 hover:bg-red-500 text-white"
+                                    )}
                                 >
-                                    Eliminar
+                                    {isCancelling === uid ? 'Cancelando...' : 'Cancelar'}
                                 </button>
                             </li>
                         ))}

@@ -1,51 +1,82 @@
 const { onRequest } = require('firebase-functions/v2/https');
-const fetch = require('node-fetch');
+const admin = require('firebase-admin');
 
-exports.notifyReservationCancelled = onRequest(async (req, res) => {
-  try {
+admin.initializeApp();
+
+exports.notifyReservationCancelled = onRequest(
+  {
+    secrets: ['PUSHWOOSH_API_TOKEN', 'PUSHWOOSH_APPLICATION_CODE'],
+    cors: true,
+  },
+  async (req, res) => {
+
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+
     const { userId, date } = req.body;
 
     if (!userId || !date) {
-      res.status(400).json({ error: 'Missing userId or date' });
-      return;
+      return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const appCode = process.env.PUSHWOOSH_APP_CODE || 
-      require('firebase-functions').config().pushwoosh.app_code;
+    try {
+      await admin.firestore().collection('cancelledReservations').add({
+        userId,
+        date,
+        cancelledAt: admin.firestore.FieldValue.serverTimestamp(),
+        cancelledBy: 'admin',
+      });
 
-    const serverApiToken = process.env.PUSHWOOSH_SERVER_API_TOKEN || 
-      require('firebase-functions').config().pushwoosh.server_api_token;
+      console.log(
+        'PUSHWOOSH_APPLICATION_CODE exists?',
+        !!process.env.PUSHWOOSH_APPLICATION_CODE
+      );
+      console.log(
+        'PUSHWOOSH_API_TOKEN prefix:',
+        (process.env.PUSHWOOSH_API_TOKEN || '').slice(0, 6)
+      );
 
-    const response = await fetch(
-      'https://cp.pushwoosh.com/json/1.3/createMessage',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          application: appCode,
-          auth: serverApiToken,
-          notifications: [
-            {
-              send_date: 'now',
-              content: {
-                es: `Tu reserva de parking para el día ${date} fue cancelada por el supervisor.`
-              },
-              users: [userId],
-              data: {
-                type: 'RESERVATION_CANCELLED',
-                date
-              }
-            }
-          ]
-        })
+      const response = await fetch(
+        'https://cp.pushwoosh.com/json/1.3/createMessage',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            request: {
+              application: process.env.PUSHWOOSH_APPLICATION_CODE,
+              auth: process.env.PUSHWOOSH_API_TOKEN,
+              notifications: [
+                {
+                  send_date: 'now',
+                  content: {
+                    es: `Tu reserva para el ${date} ha sido cancelada`,
+                  },
+                  data: {
+                    type: 'reservation_cancelled',
+                    date,
+                  },
+                  conditions: [['uid', 'EQ', userId]],
+                },
+              ],
+            },
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.status_code !== 200) {
+        console.error('Pushwoosh error:', result);
+        return res.status(500).json({ error: 'Pushwoosh failed', result });
       }
-    );
 
-    const result = await response.json();
-    res.status(200).json(result);
+      console.log('Push enviado correctamente a:', userId);
+      return res.status(200).json({ success: true });
 
-  } catch (err) {
-    console.error('Error sending push:', err);
-    res.status(500).json({ error: 'Internal error sending push' });
+    } catch (err) {
+      console.error('notifyReservationCancelled error:', err);
+      return res.status(500).json({ error: err.message });
+    }
   }
-});
+);

@@ -9,6 +9,7 @@ export function preRequestPushPermission() {
     }
 }
 
+// 2️⃣ SE EJECUTA DESPUÉS DEL LOGIN
 export async function requestPushAfterLogin(user) {
     if (!user?.uid) return;
 
@@ -25,21 +26,20 @@ export async function requestPushAfterLogin(user) {
     }
 
     if (token) {
-        // Use the registerUser method to set the user ID
         pwInstance.push((api) => {
-            api.registerUser(user.uid);
-            console.log('Pushwoosh userId asociado:', user.uid);
+            api.setTags({ uid: user.uid });
+            console.log('Pushwoosh TAG uid asociado:', user.uid);
         });
         return;
     }
 
+    // 🔁 Reintento tardío (MISMO CÓDIGO, MISMA API)
     setTimeout(async () => {
         const lateToken = await pwInstance.getPushToken();
         if (lateToken) {
-            // Use the registerUser method to set the user ID
             pwInstance.push((api) => {
-                api.registerUser(user.uid);
-                console.log('Pushwoosh userId asociado (tardío):', user.uid);
+                api.setTags({ uid: user.uid });
+                console.log('Pushwoosh TAG uid asociado (tardío):', user.uid);
             });
         }
     }, 5000);

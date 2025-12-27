@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRightToBracket, faEnvelope, faSpinner, faLock } from '@fortawesome/free-solid-svg-icons';
+import { faRightToBracket, faEnvelope, faSpinner, faLock, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { login } from '../services/auth';
 import logo from '../assets/logo.svg';
 import { requestPushAfterLogin, preRequestPushPermission } from '../services/pushwooshService';
@@ -11,6 +11,7 @@ export function Login() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
@@ -50,7 +51,7 @@ export function Login() {
     };
 
     return (
-        <div className="min-h-screen flex items-start justify-center bg-neutral-900 pt-35 p-4 pb-24">
+        <div className="min-h-screen flex items-start justify-center bg-neutral-900 pt-15 p-4 pb-24 overflow-y-hidden">
             <form
                 onSubmit={handleSubmit}
                 className="bg-neutral-800 p-6 sm:p-8 rounded-xl w-full max-w-sm space-y-5"
@@ -93,18 +94,28 @@ export function Login() {
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <FontAwesomeIcon icon={faLock} className="text-neutral-500" />
                         </div>
-                            <input
-                                id="password"
-                                name="password"
-                                type="password"
-                                placeholder="Contraseña"
-                                value={password}
-                                onChange={e => setPassword(e.target.value)}
-                                autoComplete="new-password"
-                                required
-                                className="w-full pl-10 pr-3 py-2 bg-neutral-700 border border-neutral-600 rounded-md text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        <input
+                            id="password"
+                            name="password"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Contraseña"
+                            className="w-full pl-10 pr-10 py-2 bg-neutral-700 border border-neutral-600 rounded-md text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
+                            required
+                        />
+                        <button
+                            type="button"
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                            onClick={() => setShowPassword(!showPassword)}
+                        >
+                            <FontAwesomeIcon 
+                                icon={showPassword ? faEyeSlash : faEye} 
+                                className="text-neutral-400 hover:text-white"
+                                title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                             />
-                    </div>    
+                        </button>
+                    </div>
                     <div className="text-right mt-1">
                         <Link 
                             to="/forgot-password" 
